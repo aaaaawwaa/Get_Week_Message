@@ -4,3 +4,4 @@ apscheduler
 jinja2
 requests
 feedparser
+pywebview

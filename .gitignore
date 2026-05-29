@@ -7,3 +7,9 @@ app/static/reports/*.html
 app/static/reports/covers/
 app/logs/
 app/ai_config.json
+
+# 桌面版打包输出
+dist/
+build/
+*.spec
+__pycache__/

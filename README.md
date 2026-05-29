@@ -19,6 +19,7 @@
 - 🎨 **现代 UI** — 响应式布局，双栏对比展示，封面图缓存
 - ⏰ **定时任务** — APScheduler 内置调度，也支持系统 crontab
 - 🐳 **Docker 部署** — 一键构建运行，数据持久化
+- 🖥️ **桌面应用** — PyWebView 原生窗口，可打包为独立 exe
 
 ## 🚀 快速开始
 
@@ -50,6 +51,25 @@ docker compose up -d
 ```
 
 访问 `http://127.0.0.1:8000`。日志、数据库、周报和配置均持久化到宿主机。
+
+### 桌面应用
+
+```bash
+# 安装依赖
+pip install pywebview
+
+# 启动桌面窗口（原生系统 WebView）
+python desktop.py
+```
+
+**打包为独立 exe（给没有 Python 的人用）：**
+
+```bash
+pip install pyinstaller
+pyinstaller --onefile --windowed --name "每周热点聚合" desktop.py
+```
+
+生成的可执行文件在 `dist/每周热点聚合.exe`。首次启动会自动打开浏览器窗口加载本机服务。
 
 ## 📁 项目结构
 
