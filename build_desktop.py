@@ -2,44 +2,34 @@
 构建桌面版安装包
 用法: python build_desktop.py
 
-注意: 构建前会自动用示例配置替换真实的 ai_config.json，
-      确保你的 API Key 不会被打包进 exe。
-      构建完成后自动恢复你的真实配置。
+工作原理:
+1. 将你的真实 ai_config.json（含 API Key）移到临时备份
+2. 删除 app/ai_config.json，确保它不被打包进 exe
+3. 用 PyInstaller 构建 exe（exe 内部无任何 API Key）
+4. 恢复你的真实 ai_config.json
+5. exe 首次运行时自动创建空白配置，用户自己在界面填写
 """
 
 import os
 import shutil
 import subprocess
 import sys
-import json
 
 # 确保在项目根目录
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 AI_CONFIG = "app/ai_config.json"
-AI_CONFIG_EXAMPLE = "app/ai_config.example.json"
-AI_CONFIG_BAK = "app/ai_config.json.buildbak"
+AI_CONFIG_BAK = os.path.join(os.environ["TEMP"], "ai_config.json.buildbak")
 
-# ---------- 打包前：保护 API Key ----------
+# ---------- 打包前：彻底移除 API Key ----------
 has_real_config = os.path.isfile(AI_CONFIG)
 if has_real_config:
-    print("🔒 检测到真实 ai_config.json，正在保护 API Key...")
+    print("🔒 检测到 ai_config.json，正在移除以保护 API Key...")
     shutil.copy2(AI_CONFIG, AI_CONFIG_BAK)
-    if os.path.isfile(AI_CONFIG_EXAMPLE):
-        shutil.copy2(AI_CONFIG_EXAMPLE, AI_CONFIG)
-        print("   ✅ 已替换为示例配置（无 API Key）")
-    else:
-        # 没有示例文件，创建一个空配置
-        empty = {"enabled": False, "base_url": "", "api_key": "", "model": "gpt-4o-mini", "max_tokens": 600, "max_items_per_source": 12}
-        with open(AI_CONFIG, "w", encoding="utf-8") as f:
-            json.dump(empty, f, ensure_ascii=False, indent=2)
-        print("   ✅ 已替换为空配置（无 API Key）")
+    os.remove(AI_CONFIG)
+    print("   ✅ 已从项目中移除（备份到临时目录）")
 else:
-    print("ℹ️  未检测到 ai_config.json，跳过保护")
-    if not os.path.isfile(AI_CONFIG_EXAMPLE):
-        empty = {"enabled": False, "base_url": "", "api_key": "", "model": "gpt-4o-mini", "max_tokens": 600, "max_items_per_source": 12}
-        with open(AI_CONFIG_EXAMPLE, "w", encoding="utf-8") as f:
-            json.dump(empty, f, ensure_ascii=False, indent=2)
+    print("ℹ️  未检测到 ai_config.json，无需保护")
 
 # 安装 PyInstaller
 subprocess.run([sys.executable, "-m", "pip", "install", "pyinstaller"], check=True)
@@ -58,10 +48,10 @@ subprocess.run([
 ], check=True)
 
 print("\n✅ 打包完成！安装包在 dist/每周热点聚合.exe")
+print("   exe 内部已无任何 API Key 信息，请放心分发")
 
-# ---------- 打包后：恢复真实 API Key ----------
+# ---------- 打包后：恢复本地 API Key ----------
 if has_real_config and os.path.isfile(AI_CONFIG_BAK):
     shutil.move(AI_CONFIG_BAK, AI_CONFIG)
-    print("🔓 已恢复你的真实 ai_config.json（API Key 安全回归）")
-elif has_real_config:
-    print("⚠️  备份文件丢失，请检查 app/ai_config.json 是否有误")
+    print("🔓 已恢复你的本地 ai_config.json")
+    print("   下次打包前会自动重复此流程")
