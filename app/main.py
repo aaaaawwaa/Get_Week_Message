@@ -22,7 +22,11 @@ templates = Jinja2Templates(directory=str(TEMPLATE_DIR))
 
 @app.get("/")
 def root():
-    return RedirectResponse("/reports/latest.html")
+    # 如果还没有周报，跳转到欢迎/配置页
+    latest = REPORTS_DIR / "latest.html"
+    if latest.exists():
+        return RedirectResponse("/reports/latest.html")
+    return RedirectResponse("/config")
 
 
 @app.get("/config", response_class=HTMLResponse)

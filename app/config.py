@@ -1,15 +1,30 @@
 # -*- coding: utf-8 -*-
+import os
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
-DB_PATH = BASE_DIR / "db" / "weekly.db"
+
+# 桌面版 exe 运行时，所有可写数据目录重定向到 WEEKLY_DATA_DIR
+_data_dir = os.environ.get("WEEKLY_DATA_DIR")
+if _data_dir:
+    _dp = Path(_data_dir)
+    DB_PATH = _dp / "db" / "weekly.db"
+    LOG_DIR = _dp / "logs"
+    LOG_FILE = LOG_DIR / "weekly.log"
+    AI_CONFIG_PATH = _dp / "ai_config.json"
+    REPORTS_DIR = _dp / "reports"
+    COVERS_DIR = _dp / "covers"
+else:
+    DB_PATH = BASE_DIR / "db" / "weekly.db"
+    LOG_DIR = BASE_DIR / "logs"
+    LOG_FILE = LOG_DIR / "weekly.log"
+    AI_CONFIG_PATH = BASE_DIR / "ai_config.json"
+    REPORTS_DIR = BASE_DIR / "static" / "reports"
+    COVERS_DIR = REPORTS_DIR / "covers"
+
+# templates 和 static 静态文件始终使用 exe 内部路径
 TEMPLATE_DIR = BASE_DIR / "templates"
 STATIC_DIR = BASE_DIR / "static"
-REPORTS_DIR = STATIC_DIR / "reports"
-COVERS_DIR = REPORTS_DIR / "covers"
-LOG_DIR = BASE_DIR / "logs"
-LOG_FILE = LOG_DIR / "weekly.log"
-AI_CONFIG_PATH = BASE_DIR / "ai_config.json"
 
 SOURCE_LABELS = {
     "bilibili": "Bilibili 热门",
@@ -60,7 +75,7 @@ USER_AGENT = (
 
 
 def ensure_dirs() -> None:
-    (BASE_DIR / "db").mkdir(parents=True, exist_ok=True)
+    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
     COVERS_DIR.mkdir(parents=True, exist_ok=True)
     LOG_DIR.mkdir(parents=True, exist_ok=True)
