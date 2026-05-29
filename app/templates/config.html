@@ -235,7 +235,7 @@
     </div>
     <div class="nav-actions">
       <a href="/">返回主页</a>
-      <a href="/reports/index.html">历史记录</a>
+      <a href="/history">历史记录</a>
     </div>
   </header>
 
@@ -271,6 +271,7 @@
       <button class="primary" id="save">保存配置</button>
       <button class="secondary" id="test">测试连接</button>
       <button class="secondary" id="toggle">启用并保存</button>
+      <button class="primary" id="run-now">立即抓取并查看</button>
     </div>
     <div class="status" id="status">等待操作</div>
   </div>
@@ -452,7 +453,7 @@
       const resp = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: payload ? JSON.stringify(payload) : null,
       });
       const data = await resp.json();
       return data;
@@ -489,6 +490,22 @@
       enabledInput.checked = !enabledInput.checked;
       updateToggleLabel();
       await saveConfig();
+    });
+
+    document.getElementById("run-now").addEventListener("click", async () => {
+      setStatus("正在抓取并生成周报，请稍候...");
+      try {
+        const data = await postJson("/api/run-weekly", null);
+        if (data.ok) {
+          setStatus("抓完成功！正在跳转...", "ok");
+          // 等几秒让后台生成完成，然后跳转
+          setTimeout(() => { window.location.href = "/reports/latest.html"; }, 3000);
+        } else {
+          setStatus("启动失败", "error");
+        }
+      } catch (err) {
+        setStatus("请求失败: " + err, "error");
+      }
     });
 
     enabledInput.addEventListener("change", updateToggleLabel);

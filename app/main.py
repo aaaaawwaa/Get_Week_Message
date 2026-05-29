@@ -14,10 +14,12 @@ from .config import LOG_FILE, REPORTS_DIR, TEMPLATE_DIR, ensure_dirs
 from .scheduler import start_scheduler
 
 ensure_dirs()
-
 app = FastAPI(title="Weekly Hot Topics")
-app.mount("/reports", StaticFiles(directory=str(REPORTS_DIR), html=True), name="reports")
 templates = Jinja2Templates(directory=str(TEMPLATE_DIR))
+
+# 挂载静态周报目录（可能为空，不影响动态路由）
+REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+app.mount("/reports", StaticFiles(directory=str(REPORTS_DIR), html=True), name="reports")
 
 
 @app.get("/")
@@ -38,6 +40,32 @@ def config_page(request: Request):
         {
             "config": config,
             "has_api_key": bool(config.get("api_key")),
+        },
+    )
+
+
+@app.get("/history", response_class=HTMLResponse)
+def history_page(request: Request):
+    weeks = []
+    try:
+        from .storage import get_week_summaries
+        raw = get_week_summaries()
+        weeks = [
+            {
+                "week_start": row["week_start"],
+                "total": row["total"],
+                "link": f"{row['week_start']}.html",
+            }
+            for row in raw
+        ]
+    except Exception:
+        pass
+    return templates.TemplateResponse(
+        request,
+        "index.html",
+        {
+            "weeks": weeks,
+            "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         },
     )
 
@@ -146,6 +174,25 @@ def get_ai_logs():
         })
 
     return {"lines": recent_lines[-60:], "summary": summary, "daily_chart": daily_chart}
+
+
+@app.post("/api/run-weekly", response_class=JSONResponse)
+def run_weekly_api():
+    """手动触发周报生成（配置页的立即抓取按钮）"""
+    from .run_weekly import main as run_weekly
+    import threading
+    import logging
+    logger = logging.getLogger("weekly")
+
+    def task():
+        try:
+            run_weekly()
+            logger.info("manual run-weekly completed")
+        except Exception as exc:
+            logger.error("manual run-weekly failed: %s", exc)
+
+    threading.Thread(target=task, daemon=True).start()
+    return {"ok": True, "message": "已在后台启动抓取"}
 
 
 @app.on_event("startup")
