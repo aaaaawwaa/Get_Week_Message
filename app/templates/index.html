@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>热点周报历史</title>
+  <style>
+    :root {
+      --bg: #f2f7f5;
+      --text: #1b2224;
+      --muted: #4f5b60;
+      --card: #ffffff;
+      --accent: #1d6f5e;
+      --border: #d6e4df;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 32px 20px 64px;
+      background: radial-gradient(circle at top, #e9f5f2 0%, #f2f7f5 55%, #edf4f1 100%);
+      color: var(--text);
+      font-family: "Noto Serif SC", "PingFang SC", "Microsoft Yahei", serif;
+    }
+    header {
+      max-width: 720px;
+      margin: 0 auto 28px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--border);
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+    }
+    .meta {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .controls {
+      max-width: 720px;
+      margin: 0 auto 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+    .controls input {
+      flex: 1 1 220px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-size: 14px;
+    }
+    .controls button {
+      border: 1px solid var(--border);
+      background: var(--card);
+      padding: 10px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .pager {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .pager button {
+      border: 1px solid var(--border);
+      background: var(--card);
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .pager button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    ul {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 12px;
+    }
+    li {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+      animation: rise 0.6s ease both;
+    }
+    li:nth-child(1) { animation-delay: 0.03s; }
+    li:nth-child(2) { animation-delay: 0.06s; }
+    li:nth-child(3) { animation-delay: 0.09s; }
+    li:nth-child(4) { animation-delay: 0.12s; }
+    li:nth-child(5) { animation-delay: 0.15s; }
+    a {
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    a:hover { text-decoration: underline; }
+    .count { color: var(--muted); font-size: 13px; }
+    .empty {
+      color: var(--muted);
+      font-style: italic;
+      justify-content: center;
+    }
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>热点周报历史</h1>
+    <div class="meta">生成时间: {{ generated_at }}</div>
+    <a class="meta" href="latest.html">返回主页</a>
+  </header>
+
+  <div class="controls">
+    <input id="search" type="search" placeholder="搜索周报(按日期)" />
+    <button id="clear" type="button">清空</button>
+    <div class="pager">
+      <button id="prev" type="button">上一页</button>
+      <span class="meta" id="page-info"></span>
+      <button id="next" type="button">下一页</button>
+    </div>
+  </div>
+
+  <ul>
+    {% if weeks %}
+    {% for week in weeks %}
+    <li class="week-item" data-week="{{ week.week_start }}">
+      <a href="{{ week.link }}">{{ week.week_start }}</a>
+      <span class="count">{{ week.total }} 条</span>
+    </li>
+    {% endfor %}
+    <li class="empty" id="empty-filter" style="display: none;">无匹配结果，请调整关键词。</li>
+    {% else %}
+    <li class="empty">暂无周报，请先运行抓取任务。</li>
+    {% endif %}
+  </ul>
+
+  <script>
+    const searchInput = document.getElementById("search");
+    const clearBtn = document.getElementById("clear");
+    const prevBtn = document.getElementById("prev");
+    const nextBtn = document.getElementById("next");
+    const pageInfo = document.getElementById("page-info");
+    const items = Array.from(document.querySelectorAll(".week-item"));
+    const emptyFilter = document.getElementById("empty-filter");
+
+    const pageSize = 12;
+    let currentPage = 1;
+    let filtered = items;
+
+    function render() {
+      if (emptyFilter) {
+        emptyFilter.style.display = filtered.length === 0 ? "flex" : "none";
+      }
+
+      if (filtered.length === 0) {
+        items.forEach(item => {
+          item.style.display = "none";
+        });
+        pageInfo.textContent = "无结果";
+        prevBtn.disabled = true;
+        nextBtn.disabled = true;
+        return;
+      }
+
+      const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+      if (currentPage > totalPages) {
+        currentPage = totalPages;
+      }
+
+      items.forEach(item => {
+        item.style.display = "none";
+      });
+
+      const start = (currentPage - 1) * pageSize;
+      const end = start + pageSize;
+      filtered.slice(start, end).forEach(item => {
+        item.style.display = "flex";
+      });
+
+      pageInfo.textContent = `第 ${currentPage} / ${totalPages} 页`;
+      prevBtn.disabled = currentPage <= 1;
+      nextBtn.disabled = currentPage >= totalPages;
+    }
+
+    function applyFilter() {
+      const query = searchInput.value.trim().toLowerCase();
+      filtered = items.filter(item => item.dataset.week.toLowerCase().includes(query));
+      currentPage = 1;
+      render();
+    }
+
+    prevBtn.addEventListener("click", () => {
+      currentPage -= 1;
+      render();
+    });
+
+    nextBtn.addEventListener("click", () => {
+      currentPage += 1;
+      render();
+    });
+
+    searchInput.addEventListener("input", applyFilter);
+    clearBtn.addEventListener("click", () => {
+      searchInput.value = "";
+      applyFilter();
+    });
+
+    render();
+  </script>
+</body>
+</html>

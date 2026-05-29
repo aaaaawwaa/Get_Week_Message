@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+.git/
+.gitignore
+.env
+app/logs/
+app/db/*.db
+app/static/reports/covers/
+app/static/reports/*.html
+app/ai_config.json

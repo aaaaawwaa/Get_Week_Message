@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>每周热点 - {{ week_start }}</title>
+  <style>
+    :root {
+      --bg: #f6f3ee;
+      --text: #1d1b16;
+      --muted: #5a5246;
+      --card: #ffffff;
+      --accent: #b56b2e;
+      --border: #e0d7cc;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 32px 20px 64px;
+      background: radial-gradient(circle at top, #fff7ea 0%, #f6f3ee 55%, #efe7dc 100%);
+      color: var(--text);
+      font-family: "Noto Serif SC", "PingFang SC", "Microsoft Yahei", serif;
+    }
+    header {
+      max-width: 980px;
+      margin: 0 auto 32px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--border);
+      display: grid;
+      gap: 8px;
+    }
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .header-actions {
+      display: inline-flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .header-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--muted);
+      text-decoration: none;
+      border: 1px solid var(--border);
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #fff;
+    }
+    .header-link:hover {
+      text-decoration: none;
+      color: var(--text);
+    }
+    .header-link svg {
+      width: 14px;
+      height: 14px;
+      fill: currentColor;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 32px;
+      letter-spacing: 1px;
+    }
+    .meta {
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .summary {
+      max-width: 980px;
+      margin: 0 auto 28px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+    }
+    .summary-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+    }
+    .summary-label {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 6px;
+      letter-spacing: 0.4px;
+    }
+    .summary-value {
+      font-size: 18px;
+      font-weight: 600;
+    }
+    .ai-summary {
+      max-width: 980px;
+      margin: 0 auto 28px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px 18px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+    }
+    .ai-summary h3 {
+      margin: 0 0 10px;
+      font-size: 18px;
+      color: var(--accent);
+    }
+    .ai-summary-text {
+      font-size: 14px;
+      line-height: 1.6;
+      white-space: pre-line;
+    }
+    .ai-summary-note {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .sections {
+      max-width: 980px;
+      margin: 0 auto 36px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 16px;
+      align-items: start;
+    }
+    .source-section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 16px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+    }
+    h2 {
+      margin: 0 0 12px;
+      font-size: 20px;
+      color: var(--accent);
+    }
+    ol {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 12px;
+      max-height: 720px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+    .card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      display: grid;
+      gap: 12px;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+      animation: rise 0.6s ease both;
+    }
+    .card:nth-child(1) { animation-delay: 0.03s; }
+    .card:nth-child(2) { animation-delay: 0.06s; }
+    .card:nth-child(3) { animation-delay: 0.09s; }
+    .card:nth-child(4) { animation-delay: 0.12s; }
+    .card:nth-child(5) { animation-delay: 0.15s; }
+    .card-body {
+      display: grid;
+      gap: 8px;
+    }
+    .card a {
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 18px;
+    }
+    .card a:hover {
+      text-decoration: underline;
+    }
+    .card-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .cover {
+      width: 140px;
+      height: 88px;
+      object-fit: cover;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #f2ede5;
+    }
+    footer {
+      max-width: 980px;
+      margin: 48px auto 0;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+    }
+    @media (max-width: 720px) {
+      body { padding: 24px 16px 48px; }
+      h1 { font-size: 26px; }
+      .card { grid-template-columns: 1fr; }
+      .cover { width: 100%; height: 180px; }
+      ol { max-height: none; }
+    }
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-row">
+      <div class="header-actions">
+        <a class="header-link" href="index.html">历史记录</a>
+      </div>
+      <div class="header-actions">
+        <a class="header-link" href="/config">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 8.9a3.1 3.1 0 1 0 0 6.2 3.1 3.1 0 0 0 0-6.2Zm9.2 2.3-1.6-.3a7.8 7.8 0 0 0-.7-1.7l1-1.3a.9.9 0 0 0-.1-1.1l-1.6-1.6a.9.9 0 0 0-1.1-.1l-1.3 1a7.8 7.8 0 0 0-1.7-.7l-.3-1.6a.9.9 0 0 0-.9-.7h-2.2a.9.9 0 0 0-.9.7l-.3 1.6a7.8 7.8 0 0 0-1.7.7l-1.3-1a.9.9 0 0 0-1.1.1L4.2 6.8a.9.9 0 0 0-.1 1.1l1 1.3a7.8 7.8 0 0 0-.7 1.7l-1.6.3a.9.9 0 0 0-.7.9v2.2c0 .4.3.8.7.9l1.6.3c.2.6.4 1.2.7 1.7l-1 1.3a.9.9 0 0 0 .1 1.1l1.6 1.6c.3.3.8.3 1.1.1l1.3-1c.5.3 1.1.5 1.7.7l.3 1.6c.1.4.5.7.9.7h2.2c.4 0 .8-.3.9-.7l.3-1.6c.6-.2 1.2-.4 1.7-.7l1.3 1c.3.2.8.2 1.1-.1l1.6-1.6c.3-.3.3-.8.1-1.1l-1-1.3c.3-.5.5-1.1.7-1.7l1.6-.3c.4-.1.7-.5.7-.9v-2.2a.9.9 0 0 0-.7-.9Z"/>
+          </svg>
+          AI 设置
+        </a>
+      </div>
+    </div>
+    <h1>每周热点</h1>
+    <div class="meta">周起始: {{ week_start }} | 生成时间: {{ generated_at }}</div>
+  </header>
+
+  <section class="summary">
+    <div class="summary-card">
+      <div class="summary-label">总条数</div>
+      <div class="summary-value">{{ total_count }}</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">更新时间</div>
+      <div class="summary-value">{{ generated_at }}</div>
+    </div>
+    {% for item in summary %}
+    <div class="summary-card">
+      <div class="summary-label">{{ item.label }}</div>
+      <div class="summary-value">{{ item.count }}</div>
+    </div>
+    {% endfor %}
+  </section>
+
+  <section class="ai-summary">
+    <h3>AI 每周总结</h3>
+    {% if ai_summary_status == "ok" %}
+    <div class="ai-summary-text">{{ ai_summary }}</div>
+    {% elif ai_summary_status == "empty" %}
+    <div class="ai-summary-note">暂无可总结内容。</div>
+    {% elif ai_summary_status == "error" %}
+    <div class="ai-summary-note">AI 总结生成失败，请检查日志。</div>
+    {% else %}
+    <div class="ai-summary-note">AI 总结未配置。</div>
+    {% endif %}
+  </section>
+
+  <div class="sections">
+    {% for group in groups %}
+    <section class="source-section">
+      <h2>{{ group.label }}</h2>
+      <ol>
+        {% for item in group.entries %}
+        <li class="card">
+          <div class="card-body">
+            <a href="{{ item.url }}" target="_blank" rel="noopener">{{ item.title }}</a>
+            <div class="card-meta">
+              {% if item.author %}
+                {% if item.source == "affairs" %}
+                <span>来源 {{ item.author }}</span>
+                {% else %}
+                <span>作者 {{ item.author }}</span>
+                {% endif %}
+              {% endif %}
+              {% if item.metric %}<span>{{ item.metric }}</span>{% endif %}
+              {% if item.published_at %}<span>{{ item.published_at }}</span>{% endif %}
+            </div>
+          </div>
+          {% if item.cover_url %}
+          <img class="cover" src="{{ item.cover_url }}" alt="" referrerpolicy="no-referrer" />
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ol>
+    </section>
+    {% endfor %}
+  </div>
+
+  <footer>自动生成周报</footer>
+</body>
+</html>

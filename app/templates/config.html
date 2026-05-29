@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI 配置</title>
+  <style>
+    :root {
+      --bg: #f3f0ea;
+      --text: #1e1b16;
+      --muted: #6b6154;
+      --card: #ffffff;
+      --accent: #2f6f58;
+      --border: #e1d8cc;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 32px 20px 64px;
+      background: radial-gradient(circle at top, #fff8ee 0%, #f3f0ea 55%, #efe6d8 100%);
+      color: var(--text);
+      font-family: "Noto Serif SC", "PingFang SC", "Microsoft Yahei", serif;
+    }
+    header {
+      max-width: 820px;
+      margin: 0 auto 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .nav-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .nav-actions a {
+      color: var(--muted);
+      text-decoration: none;
+      border: 1px solid var(--border);
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #fff;
+      font-size: 13px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+    }
+    .meta {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .panel {
+      max-width: 820px;
+      margin: 0 auto;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+      display: grid;
+      gap: 14px;
+    }
+    label {
+      font-size: 13px;
+      color: var(--muted);
+      display: block;
+      margin-bottom: 6px;
+    }
+    input[type="text"],
+    input[type="password"],
+    input[type="number"] {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-size: 14px;
+    }
+    .row {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    button {
+      border: none;
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .secondary {
+      background: #efe8dc;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .status {
+      font-size: 13px;
+      color: var(--muted);
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: #f6f1e8;
+      border: 1px solid var(--border);
+    }
+    .status.ok {
+      color: #1b5c46;
+      background: #e7f3ee;
+      border-color: #c9e3d8;
+    }
+    .status.error {
+      color: #8a2a1f;
+      background: #f8e7e3;
+      border-color: #f0cfc8;
+    }
+    .log-section {
+      max-width: 820px;
+      margin: 16px auto 0;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+    }
+    .log-section h3 {
+      margin: 0 0 12px;
+      font-size: 17px;
+      color: var(--accent);
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .stat-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+    }
+    .stat-label {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .stat-value {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .log-box {
+      background: #1b1a17;
+      color: #c6c1b5;
+      font-family: "Cascadia Code", "Fira Code", monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      border-radius: 12px;
+      padding: 12px;
+      max-height: 320px;
+      overflow: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .log-refresh {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .auto-refresh {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .auto-refresh input {
+      width: auto;
+    }
+    .chart-section {
+      max-width: 820px;
+      margin: 16px auto 0;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+    }
+    .chart-section h3 {
+      margin: 0 0 12px;
+      font-size: 17px;
+      color: var(--accent);
+    }
+    #token-chart {
+      width: 100%;
+      height: 200px;
+      border-radius: 10px;
+    }
+    .chart-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .chart-legend span::before {
+      content: "";
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      margin-right: 4px;
+      vertical-align: middle;
+    }
+    .legend-bar::before { background: var(--accent); }
+    .legend-line::before { background: #b56b2e; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>AI 每周总结配置</h1>
+      <div class="meta">仅建议在本机使用此页面。</div>
+    </div>
+    <div class="nav-actions">
+      <a href="/reports/latest.html">返回主页</a>
+      <a href="/reports/index.html">历史记录</a>
+    </div>
+  </header>
+
+  <div class="panel">
+    <div>
+      <label>
+        <input id="enabled" type="checkbox" {% if config.enabled %}checked{% endif %} /> 启用 AI 总结
+      </label>
+    </div>
+    <div>
+      <label>API Base URL</label>
+      <input id="base_url" type="text" value="{{ config.base_url }}" placeholder="https://api.example.com/v1" />
+    </div>
+    <div>
+      <label>API Key</label>
+      <input id="api_key" type="password" placeholder="{% if has_api_key %}已设置，留空保持{% else %}请输入 API Key{% endif %}" />
+    </div>
+    <div>
+      <label>Model</label>
+      <input id="model" type="text" value="{{ config.model }}" placeholder="gpt-4o-mini" />
+    </div>
+    <div class="row">
+      <div>
+        <label>Max Tokens</label>
+        <input id="max_tokens" type="number" value="{{ config.max_tokens }}" min="100" max="4000" />
+      </div>
+      <div>
+        <label>Max Items Per Source</label>
+        <input id="max_items" type="number" value="{{ config.max_items_per_source }}" min="3" max="50" />
+      </div>
+    </div>
+    <div class="actions">
+      <button class="primary" id="save">保存配置</button>
+      <button class="secondary" id="test">测试连接</button>
+      <button class="secondary" id="toggle">启用并保存</button>
+    </div>
+    <div class="status" id="status">等待操作</div>
+  </div>
+
+  <div class="log-section">
+    <h3>日志与消耗统计</h3>
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-label">抓取记录</div>
+        <div class="stat-value" id="stat-fetch">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">AI 调用次数</div>
+        <div class="stat-value" id="stat-ai-calls">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">总 Token 消耗</div>
+        <div class="stat-value" id="stat-tokens">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">最近耗时</div>
+        <div class="stat-value" id="stat-time">0s</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-section">
+    <h3>每日 Token 消耗（近 14 天）</h3>
+    <canvas id="token-chart"></canvas>
+    <div class="chart-legend">
+      <span class="legend-bar">Token 消耗</span>
+      <span class="legend-line">调用次数</span>
+    </div>
+  </div>
+
+  <div class="log-section">
+    <h3>日志与消耗统计</h3>
+      <button class="secondary" id="refresh-logs">刷新日志</button>
+      <label class="auto-refresh">
+        <input type="checkbox" id="auto-refresh" checked /> 自动刷新
+      </label>
+    </div>
+    <div class="log-box" id="log-box">加载中...</div>
+  </div>
+
+  <script>
+    const statusEl = document.getElementById("status");
+    const enabledInput = document.getElementById("enabled");
+    const toggleBtn = document.getElementById("toggle");
+    const payloadFromForm = () => {
+      const maxTokens = parseInt(document.getElementById("max_tokens").value || "600", 10);
+      const maxItems = parseInt(document.getElementById("max_items").value || "12", 10);
+      return {
+        enabled: document.getElementById("enabled").checked,
+        base_url: document.getElementById("base_url").value.trim(),
+        api_key: document.getElementById("api_key").value.trim(),
+        model: document.getElementById("model").value.trim(),
+        max_tokens: Number.isNaN(maxTokens) ? 600 : maxTokens,
+        max_items_per_source: Number.isNaN(maxItems) ? 12 : maxItems,
+      };
+    };
+
+    const setStatus = (text, status) => {
+      statusEl.textContent = text;
+      statusEl.classList.remove("ok", "error");
+      if (status) {
+        statusEl.classList.add(status);
+      }
+    };
+
+    const updateToggleLabel = () => {
+      toggleBtn.textContent = enabledInput.checked ? "停用并保存" : "启用并保存";
+    };
+
+    const logBox = document.getElementById("log-box");
+    const refreshBtn = document.getElementById("refresh-logs");
+    const autoRefreshInput = document.getElementById("auto-refresh");
+    let autoRefreshTimer = null;
+
+    const drawChart = (dailyData) => {
+      const canvas = document.getElementById("token-chart");
+      const ctx = canvas.getContext("2d");
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.scale(dpr, dpr);
+
+      const w = rect.width;
+      const h = rect.height;
+      const pad = { top: 20, right: 16, bottom: 40, left: 6 };
+      const cw = w - pad.left - pad.right;
+      const ch = h - pad.top - pad.bottom;
+      const count = dailyData.length;
+
+      if (count === 0) { return; }
+
+      const maxTokens = Math.max(1, ...dailyData.map(d => d.tokens));
+      const maxCalls = Math.max(1, ...dailyData.map(d => d.calls));
+      const barW = Math.max(6, Math.min(24, cw / count * 0.55));
+      const gap = cw / count;
+
+      ctx.clearRect(0, 0, w, h);
+
+      dailyData.forEach((d, i) => {
+        const x = pad.left + gap * i + (gap - barW) / 2;
+        const barH = (d.tokens / maxTokens) * ch;
+        const y = pad.top + ch - barH;
+
+        // bar
+        ctx.fillStyle = "#2f6f58";
+        ctx.beginPath();
+        ctx.roundRect(x, y, barW, barH, [3, 3, 0, 0]);
+        ctx.fill();
+
+        // call dot
+        const dotY = pad.top + ch - (d.calls / maxCalls) * ch;
+        ctx.fillStyle = "#b56b2e";
+        ctx.beginPath();
+        ctx.arc(x + barW / 2, dotY, 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        // date label
+        ctx.fillStyle = "#6b6154";
+        ctx.font = "10px sans-serif";
+        ctx.textAlign = "center";
+        const label = d.date.slice(5);
+        ctx.fillText(label, x + barW / 2, h - pad.bottom + 14);
+      });
+
+      // y-axis label
+      ctx.fillStyle = "#6b6154";
+      ctx.font = "10px sans-serif";
+      ctx.textAlign = "right";
+      ctx.fillText(maxTokens, pad.left + 50, pad.top + 12);
+    };
+
+    const loadLogs = async () => {
+      try {
+        const resp = await fetch("/api/ai-config/logs");
+        const data = await resp.json();
+        if (data.lines) {
+          logBox.textContent = data.lines.join("\n") || "暂无日志";
+        }
+        const s = data.summary || {};
+        document.getElementById("stat-fetch").textContent = s.total_fetch || 0;
+        document.getElementById("stat-ai-calls").textContent = s.ai_calls || 0;
+        document.getElementById("stat-tokens").textContent = s.last_ai_tokens || 0;
+        document.getElementById("stat-time").textContent = (s.last_ai_time || 0) + "s";
+
+        if (data.daily_chart) {
+          drawChart(data.daily_chart);
+        }
+      } catch (err) {
+        logBox.textContent = "日志加载失败";
+      }
+    };
+
+    refreshBtn.addEventListener("click", loadLogs);
+
+    const startAutoRefresh = () => {
+      stopAutoRefresh();
+      autoRefreshTimer = setInterval(loadLogs, 5000);
+    };
+    const stopAutoRefresh = () => {
+      if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+      autoRefreshTimer = null;
+    };
+
+    autoRefreshInput.addEventListener("change", () => {
+      if (autoRefreshInput.checked) startAutoRefresh();
+      else stopAutoRefresh();
+    });
+
+    loadLogs();
+    startAutoRefresh();
+
+    const postJson = async (url, payload) => {
+      const resp = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await resp.json();
+      return data;
+    };
+
+    const saveConfig = async () => {
+      setStatus("正在保存...");
+      try {
+        const data = await postJson("/api/ai-config", payloadFromForm());
+        setStatus(data.ok ? "保存成功" : "保存失败", data.ok ? "ok" : "error");
+        return data.ok;
+      } catch (err) {
+        setStatus("保存失败", "error");
+        return false;
+      }
+    };
+
+    document.getElementById("save").addEventListener("click", saveConfig);
+
+    document.getElementById("test").addEventListener("click", async () => {
+      setStatus("测试中...");
+      try {
+        const data = await postJson("/api/ai-config/test", payloadFromForm());
+        setStatus(
+          data.ok ? `测试成功: ${data.message}` : `测试失败: ${data.message}`,
+          data.ok ? "ok" : "error"
+        );
+      } catch (err) {
+        setStatus("测试失败", "error");
+      }
+    });
+
+    toggleBtn.addEventListener("click", async () => {
+      enabledInput.checked = !enabledInput.checked;
+      updateToggleLabel();
+      await saveConfig();
+    });
+
+    enabledInput.addEventListener("change", updateToggleLabel);
+    updateToggleLabel();
+  </script>
+</body>
+</html>

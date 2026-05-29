@@ -1,0 +1,8 @@
+{
+  "enabled": false,
+  "base_url": "https://api.example.com/v1",
+  "api_key": "YOUR_API_KEY",
+  "model": "gpt-4o-mini",
+  "max_tokens": 600,
+  "max_items_per_source": 12
+}

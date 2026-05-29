@@ -1,0 +1,12 @@
+services:
+  weekly-hot:
+    build: .
+    container_name: weekly-hot
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app/db:/app/app/db
+      - ./app/logs:/app/app/logs
+      - ./app/static/reports:/app/app/static/reports
+      - ./ai_config.json:/app/ai_config.json
+    restart: unless-stopped
