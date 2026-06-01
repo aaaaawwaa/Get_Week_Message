@@ -1,5 +1,6 @@
 from datetime import datetime
 import logging
+import traceback
 from typing import Dict, List
 
 import feedparser
@@ -58,9 +59,22 @@ def fetch_current_affairs(limit: int = 20, timeout: int = 10) -> List[Dict]:
                 jitter=_cfg.HTTP_JITTER,
             )
         except Exception as exc:
-            logging.getLogger("weekly").warning(
-                "fetch_current_affairs: %s failed: %s", name, exc
-            )
+            logger = logging.getLogger("weekly")
+            err_msg = f"{type(exc).__name__}: {exc}"
+            logger.warning("fetch_current_affairs: %s failed: %s", name, err_msg)
+            # 将错误信息写入 results 中的标记项，供 run_weekly 汇总
+            results.append({
+                "source": name,
+                "title": "",
+                "url": "",
+                "author": "",
+                "metric": "",
+                "cover_url": "",
+                "published_at": "",
+                "rank": 0,
+                "raw_json": "",
+                "_error": err_msg,
+            })
             continue
 
         feed = feedparser.parse(data)

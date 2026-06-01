@@ -14,12 +14,14 @@ ADMIN_CONFIG_PATH = BASE_DIR / "admin_config.json"
 
 DEFAULT_ADMIN_CONFIG: Dict = {
     "password_hash": "",
+    "password_salt": "",
     "session_token": "",
 }
 
 
-def _hash_password(password: str) -> str:
-    return hashlib.sha256(password.encode("utf-8")).hexdigest()
+def _hash_password(password: str, salt: str = "") -> str:
+    salted = (password + salt).encode("utf-8")
+    return hashlib.sha256(salted).hexdigest()
 
 
 def _random_token() -> str:
@@ -56,12 +58,15 @@ def verify_password(password: str) -> bool:
     cfg = read_admin_config()
     if not cfg.get("password_hash"):
         return True  # 未设置密码则无需验证
-    return cfg["password_hash"] == _hash_password(password)
+    salt = cfg.get("password_salt", "")
+    return cfg["password_hash"] == _hash_password(password, salt=salt)
 
 
 def set_password(password: str) -> str:
     cfg = read_admin_config()
-    cfg["password_hash"] = _hash_password(password)
+    salt = secrets.token_hex(16)
+    cfg["password_hash"] = _hash_password(password, salt=salt)
+    cfg["password_salt"] = salt
     token = _random_token()
     cfg["session_token"] = token
     save_admin_config(cfg)

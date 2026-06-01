@@ -607,9 +607,11 @@
         if (!info || !info.status) return;
         if (info.status === 'done') {
           const count = Number.isFinite(info.items) ? info.items : 0;
-          parts.push(`${name} ${count}`);
+          const err = info.error ? ` ⚠️${info.error}` : '';
+          parts.push(`${name} ${count}${err}`);
         } else if (info.status === 'error') {
-          parts.push(`${name} 失败`);
+          const err = info.error ? ` (${info.error.slice(0, 50)})` : '';
+          parts.push(`${name} 失败${err}`);
         }
       });
       return parts.length ? ' · ' + parts.join(' / ') : '';

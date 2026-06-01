@@ -28,6 +28,7 @@ def _build_fetch_jobs():
 
 
 _progress_lock = threading.Lock()
+_run_lock = threading.Lock()  # 防止同一时间多个 main() 并发执行
 _progress_state = {
     "status": "idle",
     "completed": 0,
@@ -69,14 +70,16 @@ def _start_run_progress(source_names):
         )
 
 
-def _update_run_source(name: str, status: str, items: int = 0) -> None:
+def _update_run_source(name: str, status: str, items: int = 0, error: str = "") -> None:
     with _progress_lock:
         source = _progress_state.setdefault("sources", {}).setdefault(
-            name, {"status": "pending", "items": 0}
+            name, {"status": "pending", "items": 0, "error": ""}
         )
         source["status"] = status
         if items:
             source["items"] = items
+        if error:
+            source["error"] = error
         _progress_state["updated_at"] = _now_str()
 
 
@@ -132,59 +135,76 @@ def _current_week_start() -> str:
 
 
 def main() -> None:
-    ensure_dirs()
-    configure_logging()
-    apply_data_config_to_module()
-    logger = logging.getLogger("weekly")
-    init_db()
-
-    week_start = _current_week_start()
-    items = []
-    fetch_jobs = _build_fetch_jobs()
-    _start_run_progress([name for name, _ in fetch_jobs])
+    # 防止并发运行
+    if not _run_lock.acquire(blocking=False):
+        logger = logging.getLogger("weekly")
+        logger.warning("run_weekly already in progress, skipping concurrent run")
+        return
     try:
-        with ThreadPoolExecutor(max_workers=len(fetch_jobs)) as executor:
-            future_map = {
-                executor.submit(job): name
-                for name, job in fetch_jobs
-            }
-            for future in as_completed(future_map):
-                name = future_map[future]
-                try:
-                    result = future.result()
-                    items.extend(result)
-                    logger.info("fetch ok: %s: %s items", name, len(result))
-                    _update_run_source(name, "done", len(result))
-                except Exception as exc:
-                    logger.warning("fetch failed: %s: %s", name, exc)
-                    _update_run_source(name, "error", 0)
-                finally:
-                    _advance_run_progress()
+        ensure_dirs()
+        configure_logging()
+        apply_data_config_to_module()
+        logger = logging.getLogger("weekly")
+        init_db()
 
-        _set_run_message("rendering")
-        cache_covers(items)
-        # 清理已被移除的数据源条目（当前周中不在活跃源列表的）
-        active_sources = {"bilibili", "weibo"}
-        for it in items:
-            src = it.get("source", "")
-            if src:
-                active_sources.add(src)
-        cleaned = delete_stale_sources(week_start, sorted(active_sources))
-        if cleaned:
-            logger.info("cleaned %s stale source items for %s", cleaned, week_start)
-        if items:
-            upsert_items(week_start, items)
+        week_start = _current_week_start()
+        items = []
+        fetch_jobs = _build_fetch_jobs()
+        _start_run_progress([name for name, _ in fetch_jobs])
+        try:
+            with ThreadPoolExecutor(max_workers=len(fetch_jobs)) as executor:
+                future_map = {
+                    executor.submit(job): name
+                    for name, job in fetch_jobs
+                }
+                for future in as_completed(future_map):
+                    name = future_map[future]
+                    try:
+                        result = future.result()
+                        # 过滤出有效条目和错误标记
+                        valid = [r for r in result if not r.get("_error")]
+                        errors = [r for r in result if r.get("_error")]
+                        items.extend(valid)
+                        logger.info("fetch ok: %s: %s items", name, len(valid))
+                        _update_run_source(name, "done", len(valid))
+                        if errors:
+                            err_detail = "; ".join(
+                                f"{e['source']}: {e['_error']}" for e in errors
+                            )
+                            logger.warning("fetch partial failures for %s: %s", name, err_detail)
+                            _update_run_source(name, "done", len(valid), error=err_detail)
+                    except Exception as exc:
+                        logger.warning("fetch failed: %s: %s", name, exc)
+                        _update_run_source(name, "error", 0, error=str(exc))
+                    finally:
+                        _advance_run_progress()
 
-        week_items = get_items_for_week(week_start)
-        ai_summary, ai_status = generate_weekly_summary(week_start, week_items)
-        render_weekly(week_start, week_items, ai_summary, ai_status)
+            _set_run_message("rendering")
+            cache_covers(items)
+            # 清理已被移除的数据源条目
+            active_sources = {"bilibili", "weibo"}
+            for it in items:
+                src = it.get("source", "")
+                if src:
+                    active_sources.add(src)
+            cleaned = delete_stale_sources(week_start, sorted(active_sources))
+            if cleaned:
+                logger.info("cleaned %s stale source items for %s", cleaned, week_start)
+            if items:
+                upsert_items(week_start, items)
 
-        summaries = get_week_summaries()
-        render_index(summaries)
-        _finish_run_progress("done", "done")
-    except Exception:
-        _finish_run_progress("error", "error")
-        raise
+            week_items = get_items_for_week(week_start)
+            ai_summary, ai_status = generate_weekly_summary(week_start, week_items)
+            render_weekly(week_start, week_items, ai_summary, ai_status)
+
+            summaries = get_week_summaries()
+            render_index(summaries)
+            _finish_run_progress("done", "done")
+        except Exception:
+            _finish_run_progress("error", "error")
+            raise
+    finally:
+        _run_lock.release()
 
 
 if __name__ == "__main__":
