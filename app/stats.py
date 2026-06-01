@@ -2,6 +2,7 @@
 """系统统计与数据分析接口"""
 
 import logging
+import re
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -94,7 +95,7 @@ def get_source_stats() -> List[Dict]:
 
     source_stats: Dict[str, Dict] = {}
     for line in raw.splitlines():
-        m = __import__("re").search(
+        m = re.search(
             r"^(\d{4}-\d{2}-\d{2})\s+.*fetch ok:\s*(\w+):\s*(\d+)\s*items", line
         )
         if m:
@@ -148,7 +149,7 @@ def get_fetch_summary() -> Dict:
     if LOG_FILE.exists():
         with LOG_FILE.open("r", encoding="utf-8", errors="replace") as f:
             for line in f:
-                m = __import__("re").search(r"fetch ok:\s*(\w+):\s*(\d+)\s*items", line)
+                m = re.search(r"fetch ok:\s*(\w+):\s*(\d+)\s*items", line)
                 if m:
                     src = m.group(1)
                     cnt = int(m.group(2))

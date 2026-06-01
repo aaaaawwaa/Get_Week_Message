@@ -200,6 +200,7 @@ def main() -> None:
             summaries = get_week_summaries()
             render_index(summaries)
             _finish_run_progress("done", "done")
+            logger.info("weekly report generated successfully for %s", week_start)
         except Exception:
             _finish_run_progress("error", "error")
             raise

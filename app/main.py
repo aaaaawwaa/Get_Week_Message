@@ -227,21 +227,10 @@ async def save_data_source_config(request: Request):
     apply_data_config_to_module()
     # 保存后自动在后台触发一次抓取，新数据源立即生效
     import threading
-    t = threading.Thread(target=_background_run_weekly, daemon=True)
+    from .run_weekly import main as run_weekly
+    t = threading.Thread(target=run_weekly, daemon=True)
     t.start()
     return {"ok": True, "message": "配置已保存，后台抓取已启动"}
-
-
-def _background_run_weekly():
-    """后台运行周报生成"""
-    import logging
-    logger = logging.getLogger("weekly")
-    try:
-        from .run_weekly import main as run_weekly
-        run_weekly()
-        logger.info("auto run-weekly after config save completed")
-    except Exception as exc:
-        logger.error("auto run-weekly after config save failed: %s", exc)
 
 
 @app.get("/api/overview", response_class=JSONResponse)
@@ -356,17 +345,7 @@ def run_weekly_api():
     """手动触发周报生成（配置页的立即抓取按钮）"""
     from .run_weekly import main as run_weekly
     import threading
-    import logging
-    logger = logging.getLogger("weekly")
-
-    def task():
-        try:
-            run_weekly()
-            logger.info("manual run-weekly completed")
-        except Exception as exc:
-            logger.error("manual run-weekly failed: %s", exc)
-
-    threading.Thread(target=task, daemon=True).start()
+    threading.Thread(target=run_weekly, daemon=True).start()
     return {"ok": True, "message": "已在后台启动抓取"}
 
 
