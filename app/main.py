@@ -355,6 +355,12 @@ def run_weekly_status():
     return get_run_progress()
 
 
+@app.get("/api/scheduler/next", response_class=JSONResponse)
+def scheduler_next_run():
+    from .scheduler import get_next_run_time
+    return {"next_run": get_next_run_time()}
+
+
 @app.on_event("startup")
 def on_startup():
     from .data_config import apply_data_config_to_module

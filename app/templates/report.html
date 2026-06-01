@@ -63,7 +63,22 @@
     .page-wrap { max-width: 1280px; margin: 0 auto; padding: 20px 24px; display: flex; gap: 24px; align-items: flex-start; }
 
     /* === Sidebar === */
-    .sidebar { width: var(--sidebar-w); flex-shrink: 0; position: sticky; top: 84px; display: flex; flex-direction: column; gap: 14px; }
+    .sidebar {
+      width: var(--sidebar-w); flex-shrink: 0;
+      position: sticky; top: 84px;
+      max-height: calc(100vh - 104px);
+      overflow-y: auto;
+      display: flex; flex-direction: column; gap: 14px;
+      padding-right: 4px;
+      scrollbar-width: thin;
+      scrollbar-color: #c4b89e transparent;
+    }
+    .sidebar::-webkit-scrollbar { width: 5px; }
+    .sidebar::-webkit-scrollbar-track { background: transparent; }
+    .sidebar::-webkit-scrollbar-thumb {
+      background: #c4b89e; border-radius: 3px;
+    }
+    .sidebar::-webkit-scrollbar-thumb:hover { background: #a89878; }
     .sidebar-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); }
     .sidebar-card-title {
       font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px;
@@ -79,6 +94,8 @@
     .source-nav { display: flex; flex-direction: column; gap: 4px; }
     .source-nav a { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; color: var(--text); transition: all 0.12s; }
     .source-nav a:hover { background: var(--primary-light); color: var(--primary); }
+    .source-nav a.active { background: var(--primary); color: #fff; }
+    .source-nav a.active .count { background: rgba(255,255,255,0.25); color: #fff; }
     .source-nav a .count { margin-left: auto; background: var(--bg); padding: 1px 8px; border-radius: 10px; font-size: 11px; color: var(--text-secondary); }
     .sidebar-ai { font-size: 13px; line-height: 1.6; white-space: pre-line; }
     .sidebar-ai-note { font-size: 12px; color: var(--text-secondary); font-style: italic; }
@@ -283,6 +300,18 @@
       to { opacity: 1; transform: translateX(0); }
     }
     .bili-card, .timeline-card, .featured-card { animation: slideIn 0.4s ease both; }
+
+    /* Back to top */
+    .btn-top {
+      position: fixed; bottom: 32px; right: 32px; z-index: 200;
+      width: 44px; height: 44px; border-radius: 50%;
+      background: var(--primary); color: #fff; border: none;
+      font-size: 20px; cursor: pointer; box-shadow: 0 4px 16px rgba(29,111,94,0.3);
+      opacity: 0; pointer-events: none; transition: opacity 0.35s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .btn-top.visible { opacity: 1; pointer-events: auto; }
+    .btn-top:hover { background: #155a49; transform: translateY(-2px); }
   </style>
 </head>
 <body>
@@ -523,6 +552,38 @@
           next.style.display = 'flex';
         }
       });
+    });
+
+    // Sidebar scroll-spy: highlight current section
+    const navLinks = document.querySelectorAll('.source-nav a');
+    const sections = [];
+    navLinks.forEach(a => {
+      const id = a.getAttribute('href')?.replace('#', '');
+      if (id) {
+        const el = document.getElementById(id);
+        if (el) sections.push({ id, el, link: a });
+      }
+    });
+    function updateActiveNav() {
+      let current = sections[0];
+      for (const s of sections) {
+        if (s.el.getBoundingClientRect().top <= 160) current = s;
+      }
+      navLinks.forEach(a => a.classList.remove('active'));
+      if (current) current.link.classList.add('active');
+    }
+    window.addEventListener('scroll', updateActiveNav, { passive: true });
+    updateActiveNav();
+
+    // Back to top
+    const btnTop = document.createElement('button');
+    btnTop.className = 'btn-top';
+    btnTop.innerHTML = '&#9650;';
+    btnTop.title = '回到顶部';
+    btnTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+    document.body.appendChild(btnTop);
+    window.addEventListener('scroll', () => {
+      btnTop.classList.toggle('visible', window.scrollY > 400);
     });
   </script>
 </body>

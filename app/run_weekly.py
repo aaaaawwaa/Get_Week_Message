@@ -2,6 +2,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta
 import logging
 import threading
+import time
 
 from . import config as _cfg
 from .config import ensure_dirs
@@ -70,16 +71,18 @@ def _start_run_progress(source_names):
         )
 
 
-def _update_run_source(name: str, status: str, items: int = 0, error: str = "") -> None:
+def _update_run_source(name: str, status: str, items: int = 0, error: str = "", elapsed: float = 0) -> None:
     with _progress_lock:
         source = _progress_state.setdefault("sources", {}).setdefault(
-            name, {"status": "pending", "items": 0, "error": ""}
+            name, {"status": "pending", "items": 0, "error": "", "elapsed": 0}
         )
         source["status"] = status
         if items:
             source["items"] = items
         if error:
             source["error"] = error
+        if elapsed:
+            source["elapsed"] = round(elapsed, 2)
         _progress_state["updated_at"] = _now_str()
 
 
@@ -94,13 +97,23 @@ def _advance_run_progress() -> None:
 def _finish_run_progress(status: str, message: str) -> None:
     with _progress_lock:
         total = _progress_state.get("total", 0) or 0
+        now = _now_str()
+        started = _progress_state.get("started_at", "")
+        total_elapsed = 0.0
+        if started:
+            try:
+                t0 = datetime.strptime(started, "%Y-%m-%d %H:%M:%S")
+                total_elapsed = round((datetime.now() - t0).total_seconds(), 1)
+            except ValueError:
+                pass
         _progress_state.update(
             {
                 "status": status,
                 "completed": total,
                 "message": message,
-                "updated_at": _now_str(),
-                "finished_at": _now_str(),
+                "updated_at": now,
+                "finished_at": now,
+                "total_elapsed": total_elapsed,
             }
         )
 
@@ -121,8 +134,12 @@ def get_run_progress():
             "started_at": _progress_state.get("started_at", ""),
             "updated_at": _progress_state.get("updated_at", ""),
             "finished_at": _progress_state.get("finished_at", ""),
+            "total_elapsed": _progress_state.get("total_elapsed", 0),
             "sources": {
-                name: dict(info)
+                name: {
+                    k: v for k, v in info.items()
+                    if k in ("status", "items", "error", "elapsed")
+                }
                 for name, info in (_progress_state.get("sources") or {}).items()
             },
         }
@@ -153,29 +170,34 @@ def main() -> None:
         _start_run_progress([name for name, _ in fetch_jobs])
         try:
             with ThreadPoolExecutor(max_workers=len(fetch_jobs)) as executor:
-                future_map = {
-                    executor.submit(job): name
-                    for name, job in fetch_jobs
-                }
+                # 记录每个 future 的提交时间，用于计算真实耗时
+                job_start: dict = {}
+                future_map: dict = {}
+                for name, job in fetch_jobs:
+                    t0 = time.monotonic()
+                    fut = executor.submit(job)
+                    future_map[fut] = name
+                    job_start[fut] = t0
                 for future in as_completed(future_map):
                     name = future_map[future]
+                    elapsed = round(time.monotonic() - job_start.get(future, 0), 2)
                     try:
                         result = future.result()
                         # 过滤出有效条目和错误标记
                         valid = [r for r in result if not r.get("_error")]
                         errors = [r for r in result if r.get("_error")]
                         items.extend(valid)
-                        logger.info("fetch ok: %s: %s items", name, len(valid))
-                        _update_run_source(name, "done", len(valid))
+                        logger.info("fetch ok: %s: %s items (%.1fs)", name, len(valid), elapsed)
+                        _update_run_source(name, "done", len(valid), elapsed=elapsed)
                         if errors:
                             err_detail = "; ".join(
                                 f"{e['source']}: {e['_error']}" for e in errors
                             )
                             logger.warning("fetch partial failures for %s: %s", name, err_detail)
-                            _update_run_source(name, "done", len(valid), error=err_detail)
+                            _update_run_source(name, "done", len(valid), error=err_detail, elapsed=elapsed)
                     except Exception as exc:
-                        logger.warning("fetch failed: %s: %s", name, exc)
-                        _update_run_source(name, "error", 0, error=str(exc))
+                        logger.warning("fetch failed: %s: %s (%.1fs)", name, exc, elapsed)
+                        _update_run_source(name, "error", 0, error=str(exc), elapsed=elapsed)
                     finally:
                         _advance_run_progress()
 
