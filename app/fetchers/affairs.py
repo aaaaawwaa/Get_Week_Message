@@ -1,28 +1,18 @@
-from __future__ import annotations
-
 from datetime import datetime
+import logging
 from typing import Dict, List
 
 import feedparser
 
-from ..config import (
-    CURRENT_AFFAIRS_KEYWORDS,
-    CURRENT_AFFAIRS_SOURCES,
-    HTTP_BACKOFF,
-    HTTP_JITTER,
-    HTTP_MIN_INTERVAL,
-    HTTP_RETRIES,
-    HTTP_TIMEOUT,
-    USER_AGENT,
-)
+from .. import config as _cfg
 from ..http_client import request_bytes
 
 
 def _matches_keywords(title: str, summary: str) -> bool:
-    if not CURRENT_AFFAIRS_KEYWORDS:
+    if not _cfg.CURRENT_AFFAIRS_KEYWORDS:
         return True
     text = f"{title} {summary}".lower()
-    for keyword in CURRENT_AFFAIRS_KEYWORDS:
+    for keyword in _cfg.CURRENT_AFFAIRS_KEYWORDS:
         if keyword.lower() in text:
             return True
     return False
@@ -40,11 +30,15 @@ def fetch_current_affairs(limit: int = 20, timeout: int = 10) -> List[Dict]:
     results: List[Dict] = []
 
     headers = {
-        "User-Agent": USER_AGENT,
+        "User-Agent": _cfg.USER_AGENT,
         "Accept": "application/rss+xml, application/xml;q=0.9, */*;q=0.8",
     }
 
-    for source in CURRENT_AFFAIRS_SOURCES:
+    # 计算每个源的平均分配数，确保每个源都有机会
+    num_sources = max(1, len(_cfg.CURRENT_AFFAIRS_SOURCES))
+    per_source_limit = max(1, limit // num_sources) if num_sources > 1 else limit
+
+    for source in _cfg.CURRENT_AFFAIRS_SOURCES:
         if len(results) >= limit:
             break
 
@@ -53,19 +47,27 @@ def fetch_current_affairs(limit: int = 20, timeout: int = 10) -> List[Dict]:
         if not url:
             continue
 
-        data = request_bytes(
-            url,
-            headers=headers,
-            timeout=timeout,
-            retries=HTTP_RETRIES,
-            backoff=HTTP_BACKOFF,
-            min_interval=HTTP_MIN_INTERVAL,
-            jitter=HTTP_JITTER,
-        )
+        try:
+            data = request_bytes(
+                url,
+                headers=headers,
+                timeout=timeout,
+                retries=_cfg.HTTP_RETRIES,
+                backoff=_cfg.HTTP_BACKOFF,
+                min_interval=_cfg.HTTP_MIN_INTERVAL,
+                jitter=_cfg.HTTP_JITTER,
+            )
+        except Exception as exc:
+            logging.getLogger("weekly").warning(
+                "fetch_current_affairs: %s failed: %s", name, exc
+            )
+            continue
+
         feed = feedparser.parse(data)
 
+        source_count = 0
         for entry in feed.entries:
-            if len(results) >= limit:
+            if len(results) >= limit or source_count >= per_source_limit:
                 break
 
             title = entry.get("title", "")
@@ -79,7 +81,7 @@ def fetch_current_affairs(limit: int = 20, timeout: int = 10) -> List[Dict]:
             author = entry.get("author", "") or name
             results.append(
                 {
-                    "source": "affairs",
+                    "source": name,
                     "title": title,
                     "url": link,
                     "author": author,
@@ -90,5 +92,6 @@ def fetch_current_affairs(limit: int = 20, timeout: int = 10) -> List[Dict]:
                     "raw_json": "",
                 }
             )
+            source_count += 1
 
     return results

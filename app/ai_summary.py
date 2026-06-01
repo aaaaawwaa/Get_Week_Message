@@ -134,6 +134,12 @@ def _post_chat_completion(settings: Dict, prompt: str) -> Tuple[str, Dict]:
     for attempt in range(HTTP_RETRIES):
         try:
             response = requests.post(endpoint, headers=headers, json=payload, timeout=HTTP_TIMEOUT)
+            # 4xx 错误（如无效 API Key）不重试，立即返回
+            if 400 <= response.status_code < 500:
+                logger.warning(
+                    "ai summary rejected (status=%s): %s", response.status_code, response.text[:200]
+                )
+                return "", info
             response.raise_for_status()
             data = response.json()
             elapsed = time.monotonic() - start

@@ -3,301 +3,527 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>每周热点 - {{ week_start }}</title>
+  <title>每周热点 · {{ week_start }}</title>
   <style>
     :root {
       --bg: #f6f3ee;
+      --surface: #ffffff;
       --text: #1d1b16;
-      --muted: #5a5246;
-      --card: #ffffff;
+      --text-secondary: #5a5246;
+      --primary: #1d6f5e;
+      --primary-light: #e2f0ec;
       --accent: #b56b2e;
       --border: #e0d7cc;
+      --shadow: 0 2px 12px rgba(0,0,0,0.06);
+      --shadow-lg: 0 8px 28px rgba(0,0,0,0.08);
+      --radius: 14px;
+      --radius-sm: 10px;
+      --sidebar-w: 260px;
+      --weibo: #ff6b35;
+      --weibo-bg: #fff5f0;
+      --affairs: #2c6e9c;
+      --affairs-bg: #f0f6fa;
+      --bili: #1d6f5e;
+      --bili-bg: #e2f0ec;
     }
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      margin: 0;
-      padding: 32px 20px 64px;
       background: radial-gradient(circle at top, #fff7ea 0%, #f6f3ee 55%, #efe7dc 100%);
       color: var(--text);
       font-family: "Noto Serif SC", "PingFang SC", "Microsoft Yahei", serif;
+      padding: 0;
+      min-height: 100vh;
     }
-    header {
-      max-width: 980px;
-      margin: 0 auto 32px;
-      padding-bottom: 16px;
-      border-bottom: 2px solid var(--border);
-      display: grid;
-      gap: 8px;
-    }
-    .header-row {
+    a { color: inherit; text-decoration: none; }
+
+    /* === App Bar === */
+    .app-bar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 60px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(8px);
     }
-    .header-actions {
-      display: inline-flex;
-      gap: 10px;
-      flex-wrap: wrap;
+    .app-bar-brand { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 700; color: var(--primary); }
+    .app-bar-brand svg { width: 24px; height: 24px; }
+    .app-bar-nav { display: flex; gap: 6px; }
+    .app-bar-nav a {
+      padding: 8px 14px; border-radius: 8px; text-decoration: none;
+      font-size: 14px; font-weight: 500; color: var(--text-secondary); transition: all 0.15s;
     }
-    .header-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 13px;
-      color: var(--muted);
-      text-decoration: none;
-      border: 1px solid var(--border);
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: #fff;
+    .app-bar-nav a:hover { background: var(--primary-light); color: var(--primary); }
+
+    /* === Layout === */
+    .page-wrap { max-width: 1280px; margin: 0 auto; padding: 20px 24px; display: flex; gap: 24px; align-items: flex-start; }
+
+    /* === Sidebar === */
+    .sidebar { width: var(--sidebar-w); flex-shrink: 0; position: sticky; top: 84px; display: flex; flex-direction: column; gap: 14px; }
+    .sidebar-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); }
+    .sidebar-card-title {
+      font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px;
+      color: var(--text-secondary); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border);
     }
-    .header-link:hover {
-      text-decoration: none;
-      color: var(--text);
+    .week-info { text-align: center; }
+    .week-info .week-badge { display: inline-block; background: var(--primary); color: #fff; padding: 4px 14px; border-radius: 20px; font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+    .week-info .week-meta { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+    .sidebar-stat { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; font-size: 13px; }
+    .sidebar-stat + .sidebar-stat { border-top: 1px solid var(--border); }
+    .sidebar-stat .label { color: var(--text-secondary); }
+    .sidebar-stat .value { font-weight: 700; font-size: 15px; }
+    .source-nav { display: flex; flex-direction: column; gap: 4px; }
+    .source-nav a { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; color: var(--text); transition: all 0.12s; }
+    .source-nav a:hover { background: var(--primary-light); color: var(--primary); }
+    .source-nav a .count { margin-left: auto; background: var(--bg); padding: 1px 8px; border-radius: 10px; font-size: 11px; color: var(--text-secondary); }
+    .sidebar-ai { font-size: 13px; line-height: 1.6; white-space: pre-line; }
+    .sidebar-ai-note { font-size: 12px; color: var(--text-secondary); font-style: italic; }
+
+    /* === Main Content === */
+    .main-content { flex: 1; min-width: 0; }
+    .hero {
+      background: linear-gradient(135deg, #1d6f5e 0%, #155a49 100%);
+      border-radius: var(--radius); padding: 28px 32px; margin-bottom: 24px;
+      color: #fff; box-shadow: 0 8px 24px rgba(29,111,94,0.18);
     }
-    .header-link svg {
-      width: 14px;
-      height: 14px;
-      fill: currentColor;
+    .hero h1 { font-size: 28px; font-weight: 700; margin-bottom: 6px; letter-spacing: 0.5px; }
+    .hero .sub { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; opacity: 0.85; }
+    .hero .sub span { display: flex; align-items: center; gap: 5px; }
+
+    /* === Section Header === */
+    .section-header {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 2px solid var(--border);
     }
-    h1 {
-      margin: 0 0 8px;
-      font-size: 32px;
-      letter-spacing: 1px;
+    .section-header h2 { font-size: 20px; font-weight: 700; }
+    .section-header .badge {
+      background: var(--primary-light); color: var(--primary); padding: 2px 10px; border-radius: 20px; font-size: 12px; font-weight: 600;
     }
-    .meta {
-      color: var(--muted);
-      font-size: 14px;
+    .section-header .hint { font-size: 12px; color: var(--text-secondary); margin-left: auto; }
+
+    /* === Bilibili: Image Cards (horizontal scroll) === */
+    .bili-scroll {
+      display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch; padding-bottom: 8px;
+      scrollbar-width: thin; scrollbar-color: var(--border) transparent;
     }
-    .summary {
-      max-width: 980px;
-      margin: 0 auto 28px;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 12px;
+    .bili-scroll::-webkit-scrollbar { height: 6px; }
+    .bili-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    .bili-card {
+      scroll-snap-align: start; flex: 0 0 240px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); overflow: hidden;
+      box-shadow: var(--shadow); transition: all 0.2s;
     }
-    .summary-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 14px 16px;
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+    .bili-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+    .bili-card-img {
+      width: 100%; height: 120px; object-fit: cover; border-bottom: 1px solid var(--border);
+      background: linear-gradient(135deg, #1d6f5e, #3caf8c);
     }
-    .summary-label {
-      color: var(--muted);
-      font-size: 12px;
-      margin-bottom: 6px;
-      letter-spacing: 0.4px;
+    .bili-card-body { padding: 10px 12px 12px; }
+    .bili-card-rank {
+      display: inline-block; font-size: 10px; font-weight: 700; padding: 1px 7px;
+      border-radius: 4px; margin-bottom: 4px;
     }
-    .summary-value {
-      font-size: 18px;
-      font-weight: 600;
+    .bili-card-rank.r1 { background: linear-gradient(135deg, #f7d875, #e8b410); color: #7a5a00; }
+    .bili-card-rank.r2 { background: linear-gradient(135deg, #ececec, #c8c8c8); color: #555; }
+    .bili-card-rank.r3 { background: linear-gradient(135deg, #f2ccaa, #d4915a); color: #6b3a10; }
+    .bili-card-rank.rn { background: var(--bg); color: var(--text-secondary); }
+    .bili-card-title {
+      font-size: 13px; font-weight: 600; line-height: 1.35;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
-    .ai-summary {
-      max-width: 980px;
-      margin: 0 auto 28px;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 16px 18px;
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+    .bili-card-title a:hover { color: var(--primary); text-decoration: underline; }
+    .bili-card-meta { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+
+    /* === Weibo / Affairs: Text Timeline Cards === */
+    .timeline { display: flex; flex-direction: column; gap: 8px; }
+
+    .timeline-card {
+      display: flex; gap: 14px; align-items: stretch;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); overflow: hidden;
+      box-shadow: var(--shadow); transition: all 0.15s;
     }
-    .ai-summary h3 {
-      margin: 0 0 10px;
-      font-size: 18px;
-      color: var(--accent);
+    .timeline-card:hover { transform: translateX(4px); box-shadow: var(--shadow-lg); }
+
+    .timeline-accent {
+      width: 4px; flex-shrink: 0; align-self: stretch;
     }
-    .ai-summary-text {
-      font-size: 14px;
-      line-height: 1.6;
-      white-space: pre-line;
+    .timeline-accent.weibo { background: linear-gradient(180deg, #ff6b35, #f7c948); }
+    .timeline-accent.affairs { background: linear-gradient(180deg, #2c6e9c, #5ba3d9); }
+
+    .timeline-body {
+      flex: 1; padding: 14px 14px 14px 0; display: flex; align-items: flex-start; gap: 14px; min-width: 0;
     }
-    .ai-summary-note {
-      color: var(--muted);
-      font-size: 13px;
+
+    .timeline-rank {
+      width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; font-weight: 700;
     }
-    .sections {
-      max-width: 980px;
-      margin: 0 auto 36px;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 16px;
-      align-items: start;
+    .timeline-rank.r1 { background: linear-gradient(135deg, #f7d875, #e8b410); color: #7a5a00; }
+    .timeline-rank.r2 { background: linear-gradient(135deg, #ececec, #c8c8c8); color: #555; }
+    .timeline-rank.r3 { background: linear-gradient(135deg, #f2ccaa, #d4915a); color: #6b3a10; }
+    .timeline-rank.rn-weibo { background: #fff5f0; color: #ff6b35; }
+    .timeline-rank.rn-affairs { background: #f0f6fa; color: #2c6e9c; }
+
+    .timeline-content { flex: 1; min-width: 0; }
+    .timeline-title {
+      font-size: 15px; font-weight: 600; line-height: 1.5; margin-bottom: 6px;
     }
-    .source-section {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 16px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+    .timeline-title a:hover { color: var(--primary); text-decoration: underline; }
+    .timeline-meta {
+      display: flex; flex-wrap: wrap; gap: 8px; font-size: 12px; color: var(--text-secondary);
     }
-    h2 {
-      margin: 0 0 12px;
-      font-size: 20px;
-      color: var(--accent);
+    .timeline-meta .tag {
+      display: inline-flex; align-items: center; gap: 3px;
+      background: var(--bg); padding: 2px 8px; border-radius: 6px;
     }
-    ol {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      display: grid;
-      gap: 12px;
-      max-height: 720px;
-      overflow: auto;
-      padding-right: 4px;
+    .timeline-hot {
+      display: inline-flex; align-items: center; gap: 4px; font-weight: 600;
     }
-    .card {
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 16px;
-      display: grid;
-      gap: 12px;
-      grid-template-columns: 1fr auto;
-      align-items: center;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
-      animation: rise 0.6s ease both;
+
+    .timeline-source-icon {
+      width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
     }
-    .card:nth-child(1) { animation-delay: 0.03s; }
-    .card:nth-child(2) { animation-delay: 0.06s; }
-    .card:nth-child(3) { animation-delay: 0.09s; }
-    .card:nth-child(4) { animation-delay: 0.12s; }
-    .card:nth-child(5) { animation-delay: 0.15s; }
-    .card-body {
-      display: grid;
-      gap: 8px;
+    .timeline-source-icon.weibo { background: #fff5f0; }
+    .timeline-source-icon.affairs { background: #f0f6fa; }
+
+    /* === Featured carousel (混合) === */
+    .featured-section { margin-bottom: 24px; }
+    .featured-scroll {
+      display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch; padding-bottom: 8px;
+      scrollbar-width: thin; scrollbar-color: var(--border) transparent;
     }
-    .card a {
-      color: var(--text);
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 18px;
+    .featured-scroll::-webkit-scrollbar { height: 6px; }
+    .featured-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    .featured-card {
+      scroll-snap-align: start; flex: 0 0 280px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); overflow: hidden;
+      box-shadow: var(--shadow); transition: all 0.2s;
     }
-    .card a:hover {
-      text-decoration: underline;
+    .featured-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+    .featured-card-img {
+      width: 100%; height: 130px; object-fit: cover; border-bottom: 1px solid var(--border);
     }
-    .card-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      color: var(--muted);
-      font-size: 13px;
+    .featured-card-body { padding: 12px 14px 14px; }
+    .featured-card-rank {
+      display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 4px; margin-bottom: 6px;
     }
-    .cover {
-      width: 140px;
-      height: 88px;
-      object-fit: cover;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      background: #f2ede5;
+    .featured-card-rank.r1 { background: linear-gradient(135deg, #f7d875, #e8b410); color: #7a5a00; }
+    .featured-card-rank.r2 { background: linear-gradient(135deg, #ececec, #c8c8c8); color: #555; }
+    .featured-card-rank.r3 { background: linear-gradient(135deg, #f2ccaa, #d4915a); color: #6b3a10; }
+    .featured-card-rank.rn { background: var(--bg); color: var(--text-secondary); }
+    .featured-card-rank.rn-f { background: rgba(255,255,255,0.2); color: rgba(255,255,255,0.8); }
+    .featured-card-title {
+      font-size: 14px; font-weight: 600; line-height: 1.3;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
-    footer {
-      max-width: 980px;
-      margin: 48px auto 0;
-      color: var(--muted);
-      font-size: 12px;
-      text-align: center;
+    .featured-card-title a:hover { color: var(--primary); text-decoration: underline; }
+    .featured-card-meta { display: flex; gap: 6px; margin-top: 6px; font-size: 11px; color: var(--text-secondary); flex-wrap: wrap; }
+    .featured-card-source { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-secondary); margin-bottom: 4px; }
+
+    /* Featured no-image placeholder */
+    .f-placeholder {
+      width: 100%; height: 130px; display: flex; align-items: center; justify-content: center;
+      position: relative; overflow: hidden; border-bottom: 1px solid var(--border);
     }
-    @media (max-width: 720px) {
-      body { padding: 24px 16px 48px; }
-      h1 { font-size: 26px; }
-      .card { grid-template-columns: 1fr; }
-      .cover { width: 100%; height: 180px; }
-      ol { max-height: none; }
+    .f-placeholder .dots {
+      position: absolute; inset: 0; opacity: 0.1;
+      background-image: radial-gradient(circle, #fff 1px, transparent 1px); background-size: 20px 20px;
     }
-    @keyframes rise {
-      from {
-        opacity: 0;
-        transform: translateY(12px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    .f-placeholder .ficon { font-size: 36px; position: relative; z-index: 1; }
+    .f-placeholder .frank {
+      position: absolute; top: 8px; left: 8px; padding: 2px 8px; border-radius: 4px;
+      font-size: 11px; font-weight: 700; z-index: 1;
     }
+    .f-placeholder .fsrc {
+      position: absolute; bottom: 8px; left: 8px; font-size: 10px; font-weight: 600;
+      padding: 2px 8px; border-radius: 4px; color: rgba(255,255,255,0.85);
+      background: rgba(0,0,0,0.2); z-index: 1;
+    }
+    .fp-weibo { background: linear-gradient(135deg, #ff6b35, #f7c948); }
+    .fp-affairs { background: linear-gradient(135deg, #2c6e9c, #5ba3d9); }
+    .fp-bilibili { background: linear-gradient(135deg, #1d6f5e, #3caf8c); }
+
+    .category-section { margin-bottom: 24px; }
+
+    footer { text-align: center; color: var(--text-secondary); font-size: 12px; padding: 32px 0 8px; border-top: 1px solid var(--border); }
+
+    @media (max-width: 900px) {
+      .page-wrap { flex-direction: column; padding: 16px; }
+      .sidebar { width: 100%; position: static; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      .sidebar .sidebar-card:first-child { grid-column: 1 / -1; }
+    }
+    @media (max-width: 600px) {
+      .sidebar { grid-template-columns: 1fr; }
+      .app-bar { padding: 0 12px; }
+      .app-bar-nav a { padding: 6px 8px; font-size: 12px; }
+      .hero { padding: 20px; }
+      .hero h1 { font-size: 22px; }
+      .featured-card { flex: 0 0 240px; }
+      .bili-card { flex: 0 0 200px; }
+      .bili-card-img { height: 100px; }
+      .timeline-body { flex-direction: column; gap: 8px; }
+      .timeline-rank { width: 32px; height: 32px; font-size: 13px; }
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(12px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    .bili-card, .timeline-card, .featured-card { animation: slideIn 0.4s ease both; }
   </style>
 </head>
 <body>
-  <header>
-    <div class="header-row">
-      <div class="header-actions">
-        <a class="header-link" href="/history">历史记录</a>
-      </div>
-      <div class="header-actions">
-        <a class="header-link" href="/config">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M12 8.9a3.1 3.1 0 1 0 0 6.2 3.1 3.1 0 0 0 0-6.2Zm9.2 2.3-1.6-.3a7.8 7.8 0 0 0-.7-1.7l1-1.3a.9.9 0 0 0-.1-1.1l-1.6-1.6a.9.9 0 0 0-1.1-.1l-1.3 1a7.8 7.8 0 0 0-1.7-.7l-.3-1.6a.9.9 0 0 0-.9-.7h-2.2a.9.9 0 0 0-.9.7l-.3 1.6a7.8 7.8 0 0 0-1.7.7l-1.3-1a.9.9 0 0 0-1.1.1L4.2 6.8a.9.9 0 0 0-.1 1.1l1 1.3a7.8 7.8 0 0 0-.7 1.7l-1.6.3a.9.9 0 0 0-.7.9v2.2c0 .4.3.8.7.9l1.6.3c.2.6.4 1.2.7 1.7l-1 1.3a.9.9 0 0 0 .1 1.1l1.6 1.6c.3.3.8.3 1.1.1l1.3-1c.5.3 1.1.5 1.7.7l.3 1.6c.1.4.5.7.9.7h2.2c.4 0 .8-.3.9-.7l.3-1.6c.6-.2 1.2-.4 1.7-.7l1.3 1c.3.2.8.2 1.1-.1l1.6-1.6c.3-.3.3-.8.1-1.1l-1-1.3c.3-.5.5-1.1.7-1.7l1.6-.3c.4-.1.7-.5.7-.9v-2.2a.9.9 0 0 0-.7-.9Z"/>
-          </svg>
-          AI 设置
-        </a>
-      </div>
+  <header class="app-bar">
+    <div class="app-bar-brand">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+      每周热点
     </div>
-    <h1>每周热点</h1>
-    <div class="meta">周起始: {{ week_start }} | 生成时间: {{ generated_at }}</div>
+    <nav class="app-bar-nav">
+      <a href="/reports/latest.html">最新周报</a>
+      <a href="/history">历史记录</a>
+      <a href="/config">仪表盘</a>
+    </nav>
   </header>
 
-  <section class="summary">
-    <div class="summary-card">
-      <div class="summary-label">总条数</div>
-      <div class="summary-value">{{ total_count }}</div>
-    </div>
-    <div class="summary-card">
-      <div class="summary-label">更新时间</div>
-      <div class="summary-value">{{ generated_at }}</div>
-    </div>
-    {% for item in summary %}
-    <div class="summary-card">
-      <div class="summary-label">{{ item.label }}</div>
-      <div class="summary-value">{{ item.count }}</div>
-    </div>
-    {% endfor %}
-  </section>
+  <div class="page-wrap">
+    <aside class="sidebar">
+      <div class="sidebar-card week-info">
+        <div class="week-badge">{{ week_start }}</div>
+        <div class="week-meta">生成于 {{ generated_at }}<br />共 {{ total_count }} 条热点</div>
+      </div>
+      <div class="sidebar-card">
+        <div class="sidebar-card-title">📊 概览</div>
+        <div class="sidebar-stat"><span class="label">总条数</span><span class="value" style="color:var(--primary);">{{ total_count }}</span></div>
+        {% for item in summary %}
+        <div class="sidebar-stat"><span class="label">{{ item.label }}</span><span class="value">{{ item.count }}</span></div>
+        {% endfor %}
+      </div>
+      <div class="sidebar-card">
+        <div class="sidebar-card-title">📑 分类</div>
+        <nav class="source-nav">
+          {% for group in groups %}
+          <a href="#source-{{ group.source }}">
+            {% if group.source == "bilibili" %}📺{% elif group.source == "weibo" %}🔥{% else %}📰{% endif %}
+            {{ group.label }}<span class="count">{{ group.entries | length }}</span>
+          </a>
+          {% endfor %}
+        </nav>
+      </div>
+      <div class="sidebar-card">
+        <div class="sidebar-card-title">🤖 AI 总结</div>
+        {% if ai_summary_status == "ok" %}
+        <div class="sidebar-ai">{{ ai_summary }}</div>
+        {% elif ai_summary_status == "empty" %}
+        <div class="sidebar-ai-note">暂无可总结内容。</div>
+        {% elif ai_summary_status == "error" %}
+        <div class="sidebar-ai-note">AI 总结生成失败，请检查日志。</div>
+        {% else %}
+        <div class="sidebar-ai-note">未配置。前往 <a href="/config" style="color:var(--primary);text-decoration:underline;">仪表盘</a> 设置。</div>
+        {% endif %}
+      </div>
+    </aside>
 
-  <section class="ai-summary">
-    <h3>AI 每周总结</h3>
-    {% if ai_summary_status == "ok" %}
-    <div class="ai-summary-text">{{ ai_summary }}</div>
-    {% elif ai_summary_status == "empty" %}
-    <div class="ai-summary-note">暂无可总结内容。</div>
-    {% elif ai_summary_status == "error" %}
-    <div class="ai-summary-note">AI 总结生成失败，请检查日志。</div>
-    {% else %}
-    <div class="ai-summary-note">AI 总结未配置。</div>
-    {% endif %}
-  </section>
+    <main class="main-content">
+      <div class="hero">
+        <h1>📈 每周热点聚合</h1>
+        <div class="sub">
+          <span>📅 周起始: {{ week_start }}</span>
+          <span>⏱ {{ generated_at }}</span>
+          <span>📊 {{ total_count }} 条</span>
+        </div>
+      </div>
 
-  <div class="sections">
-    {% for group in groups %}
-    <section class="source-section">
-      <h2>{{ group.label }}</h2>
-      <ol>
-        {% for item in group.entries %}
-        <li class="card">
-          <div class="card-body">
-            <a href="{{ item.url }}" target="_blank" rel="noopener">{{ item.title }}</a>
-            <div class="card-meta">
-              {% if item.author %}
-                {% if item.source == "affairs" %}
-                <span>来源 {{ item.author }}</span>
-                {% else %}
-                <span>作者 {{ item.author }}</span>
-                {% endif %}
-              {% endif %}
-              {% if item.metric %}<span>{{ item.metric }}</span>{% endif %}
-              {% if item.published_at %}<span>{{ item.published_at }}</span>{% endif %}
+      <!-- Featured: 各源 Top 混合 -->
+      {% if featured_items %}
+      <div class="featured-section">
+        <div class="section-header">
+          <h2>🏆 本周精选</h2>
+          <span class="badge">{{ featured_items | length }}</span>
+          <span class="hint">← 左右滑动 →</span>
+        </div>
+        <div class="featured-scroll">
+          {% for item in featured_items %}
+          {% set rclass = "rn" %}
+          {% if item.rank is not none and item.rank <= 3 %}
+            {% if item.rank == 1 %}{% set rclass = "r1" %}
+            {% elif item.rank == 2 %}{% set rclass = "r2" %}
+            {% elif item.rank == 3 %}{% set rclass = "r3" %}
+            {% endif %}
+          {% endif %}
+          <div class="featured-card">
+            {% if item.cover_url %}
+            <img class="featured-card-img" src="{{ item.cover_url }}" alt="" referrerpolicy="no-referrer"
+                 onerror="this.style.display='none'" loading="lazy" />
+            <div class="f-placeholder fp-{{ item.source }}" style="display:none">
+            {% else %}
+            <div class="f-placeholder fp-{{ item.source }}">
+            {% endif %}
+              <div class="dots"></div>
+              <span class="frank" style="{% if item.rank == 1 %}background:linear-gradient(135deg,#f7d875,#e8b410);color:#7a5a00;{% elif item.rank == 2 %}background:linear-gradient(135deg,#ececec,#c8c8c8);color:#555;{% elif item.rank == 3 %}background:linear-gradient(135deg,#f2ccaa,#d4915a);color:#6b3a10;{% else %}background:rgba(255,255,255,0.2);color:rgba(255,255,255,0.8);{% endif %}">
+                #{{ item.rank }}
+              </span>
+              <span class="ficon">{% if item.source == "bilibili" %}📺{% elif item.source == "weibo" %}🔥{% else %}📰{% endif %}</span>
+              <span class="fsrc">{% if item.source == "bilibili" %}Bilibili{% elif item.source == "weibo" %}微博{% else %}{{ item.source }}{% endif %}</span>
+            </div>
+            <div class="featured-card-body">
+              <div class="featured-card-source">
+                {% if item.source == "bilibili" %}📺 Bilibili{% elif item.source == "weibo" %}🔥 微博{% else %}📰 {{ item.source }}{% endif %}
+              </div>
+              <span class="featured-card-rank {{ rclass }}">{% if item.rank is not none %}#{{ item.rank }}{% endif %}</span>
+              <div class="featured-card-title"><a href="{{ item.url }}" target="_blank" rel="noopener">{{ item.title }}</a></div>
+              <div class="featured-card-meta">
+                {% if item.metric %}<span>🔥 {{ item.metric }}</span>{% endif %}
+                {% if item.author %}<span>👤 {{ item.author }}</span>{% endif %}
+              </div>
             </div>
           </div>
-          {% if item.cover_url %}
-          <img class="cover" src="{{ item.cover_url }}" alt="" referrerpolicy="no-referrer" />
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Bilibili: 图片卡片 -->
+      {% for group in groups %}
+      {% if group.source == "bilibili" %}
+      <div class="category-section" id="source-bilibili">
+        <div class="section-header">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <h2>📺 {{ group.label }}</h2>
+            <span class="badge">{{ group.entries | length }} 条</span>
+          </div>
+          <span class="hint">← 左右滑动浏览 →</span>
+        </div>
+        <div class="bili-scroll">
+          {% for item in group.entries %}
+          {% set rclass = "rn" %}
+          {% if item.rank is not none and item.rank <= 3 %}
+            {% if item.rank == 1 %}{% set rclass = "r1" %}
+            {% elif item.rank == 2 %}{% set rclass = "r2" %}
+            {% elif item.rank == 3 %}{% set rclass = "r3" %}
+            {% endif %}
           {% endif %}
-        </li>
-        {% endfor %}
-      </ol>
-    </section>
-    {% endfor %}
+          <div class="bili-card">
+            {% if item.cover_url %}
+            <img class="bili-card-img" src="{{ item.cover_url }}" alt="" referrerpolicy="no-referrer"
+                 onerror="this.style.display='none'" loading="lazy" />
+            {% endif %}
+            <div class="bili-card-body">
+              <span class="bili-card-rank {{ rclass }}">#{{ item.rank }}</span>
+              <div class="bili-card-title"><a href="{{ item.url }}" target="_blank" rel="noopener">{{ item.title }}</a></div>
+              <div class="bili-card-meta">{% if item.author %}👤 {{ item.author }}{% endif %}{% if item.metric %} · 🔥 {{ item.metric }}{% endif %}</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+      {% endfor %}
+
+      <!-- Weibo: 时间线卡片 -->
+      {% for group in groups %}
+      {% if group.source == "weibo" %}
+      <div class="category-section" id="source-weibo">
+        <div class="section-header">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <h2>🔥 {{ group.label }}</h2>
+            <span class="badge">{{ group.entries | length }} 条</span>
+          </div>
+        </div>
+        <div class="timeline">
+          {% for item in group.entries %}
+          {% set rclass = "rn-weibo" %}
+          {% if item.rank is not none and item.rank <= 3 %}
+            {% if item.rank == 1 %}{% set rclass = "r1" %}
+            {% elif item.rank == 2 %}{% set rclass = "r2" %}
+            {% elif item.rank == 3 %}{% set rclass = "r3" %}
+            {% endif %}
+          {% endif %}
+          <div class="timeline-card">
+            <div class="timeline-accent weibo"></div>
+            <div class="timeline-body">
+              <div class="timeline-rank {{ rclass }}">{{ item.rank }}</div>
+              <div class="timeline-content">
+                <div class="timeline-title"><a href="{{ item.url }}" target="_blank" rel="noopener">{{ item.title }}</a></div>
+                <div class="timeline-meta">
+                  {% if item.metric %}<span class="tag timeline-hot" style="color:#ff6b35;">🔥 {{ item.metric | replace('hot ', '') }}</span>{% endif %}
+                  {% if item.author %}<span class="tag">👤 {{ item.author }}</span>{% endif %}
+                </div>
+              </div>
+              <div class="timeline-source-icon weibo">🔥</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+      {% endfor %}
+
+      <!-- RSS 源: 时间线卡片（所有非 bilibili/weibo 的动态源） -->
+      {% for group in groups %}
+      {% if group.source != "bilibili" and group.source != "weibo" %}
+      <div class="category-section" id="source-{{ group.source }}">
+        <div class="section-header">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <h2>📰 {{ group.label }}</h2>
+            <span class="badge">{{ group.entries | length }} 条</span>
+          </div>
+        </div>
+        <div class="timeline">
+          {% for item in group.entries %}
+          {% set rclass = "rn-affairs" %}
+          {% if item.rank is not none and item.rank <= 3 %}
+            {% if item.rank == 1 %}{% set rclass = "r1" %}
+            {% elif item.rank == 2 %}{% set rclass = "r2" %}
+            {% elif item.rank == 3 %}{% set rclass = "r3" %}
+            {% endif %}
+          {% endif %}
+          <div class="timeline-card">
+            <div class="timeline-accent affairs"></div>
+            <div class="timeline-body">
+              <div class="timeline-rank {{ rclass }}">{{ item.rank }}</div>
+              <div class="timeline-content">
+                <div class="timeline-title"><a href="{{ item.url }}" target="_blank" rel="noopener">{{ item.title }}</a></div>
+                <div class="timeline-meta">
+                  {% if item.author %}<span class="tag">📰 {{ item.author }}</span>{% endif %}
+                  {% if item.published_at %}<span class="tag">📅 {{ item.published_at }}</span>{% endif %}
+                </div>
+              </div>
+              <div class="timeline-source-icon affairs">📰</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+      {% endfor %}
+
+      <footer>📊 每周热点聚合 · 自动生成 · {{ week_start }}</footer>
+    </main>
   </div>
 
-  <footer>自动生成周报</footer>
+  <script>
+    document.querySelectorAll('.bili-card-img, .featured-card-img').forEach(img => {
+      img.addEventListener('error', function() {
+        this.style.display = 'none';
+        const next = this.nextElementSibling;
+        if (next && next.classList.contains('f-placeholder')) {
+          next.style.display = 'flex';
+        }
+      });
+    });
+  </script>
 </body>
 </html>

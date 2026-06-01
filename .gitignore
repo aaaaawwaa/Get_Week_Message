@@ -1,15 +1,36 @@
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
+*.egg-info/
 .venv/
 .env
+
+# IDE
+.vscode/
+.idea/
+
+# 数据 & 日志（不提交）
 app/db/*.db
+app/db/*.db-shm
+app/db/*.db-wal
+app/logs/
 app/static/reports/*.html
 app/static/reports/covers/
-app/logs/
-app/ai_config.json
 
-# 桌面版打包输出
+# 敏感配置
+app/ai_config.json
+app/data_sources.json
+
+# 桌面版打包
 dist/
 build/
 *.spec
-__pycache__/
+*.toc
+*.exe
+
+# Docker
+docker-compose.override.yml
+
+# OS
+.DS_Store
+Thumbs.db

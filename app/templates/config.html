@@ -3,371 +3,875 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>AI 配置</title>
+  <title>设置 · 每周热点</title>
   <style>
     :root {
       --bg: #f3f0ea;
+      --surface: #fff;
       --text: #1e1b16;
-      --muted: #6b6154;
-      --card: #ffffff;
-      --accent: #2f6f58;
+      --text-secondary: #6b6154;
+      --primary: #2f6f58;
+      --primary-light: #e7f3ee;
+      --primary-dark: #1d4f3e;
+      --accent: #b56b2e;
+      --accent-light: #f5e8dc;
       --border: #e1d8cc;
+      --danger: #c0392b;
+      --danger-bg: #fde8e5;
+      --success: #1d6f5e;
+      --success-bg: #e2f0ec;
+      --shadow: 0 2px 12px rgba(0,0,0,0.06);
+      --shadow-lg: 0 8px 28px rgba(0,0,0,0.08);
+      --radius: 14px;
+      --radius-sm: 10px;
+      --sidebar-w: 220px;
     }
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      margin: 0;
-      padding: 32px 20px 64px;
       background: radial-gradient(circle at top, #fff8ee 0%, #f3f0ea 55%, #efe6d8 100%);
       color: var(--text);
       font-family: "Noto Serif SC", "PingFang SC", "Microsoft Yahei", serif;
+      padding: 0;
+      min-height: 100vh;
     }
-    header {
-      max-width: 820px;
-      margin: 0 auto 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
+    a { color: inherit; text-decoration: none; }
+
+    /* App Bar */
+    .app-bar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px; height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100; backdrop-filter: blur(8px);
     }
-    .nav-actions {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
+    .app-bar-brand { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 700; color: var(--primary); }
+    .app-bar-brand svg { width: 24px; height: 24px; }
+    .app-bar-nav { display: flex; gap: 6px; }
+    .app-bar-nav a {
+      padding: 8px 14px; border-radius: 8px; text-decoration: none;
+      font-size: 14px; font-weight: 500; color: var(--text-secondary); transition: all 0.15s;
     }
-    .nav-actions a {
-      color: var(--muted);
-      text-decoration: none;
-      border: 1px solid var(--border);
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: #fff;
-      font-size: 13px;
+    .app-bar-nav a:hover, .app-bar-nav a.active { background: var(--primary-light); color: var(--primary); }
+
+    /* Layout */
+    .page-wrap { max-width: 1100px; margin: 0 auto; padding: 24px; display: flex; gap: 24px; align-items: flex-start; }
+
+    /* Sidebar Nav */
+    .side-nav {
+      width: var(--sidebar-w); flex-shrink: 0; position: sticky; top: 84px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 8px; box-shadow: var(--shadow);
     }
-    h1 {
-      margin: 0 0 8px;
-      font-size: 28px;
+    .side-nav a {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; border-radius: var(--radius-sm);
+      font-size: 14px; font-weight: 500; color: var(--text-secondary);
+      transition: all 0.12s; cursor: pointer;
     }
-    .meta {
-      color: var(--muted);
-      font-size: 13px;
+    .side-nav a:hover { background: var(--primary-light); color: var(--primary); }
+    .side-nav a.active { background: var(--primary); color: #fff; }
+
+    /* Main */
+    .main-content { flex: 1; min-width: 0; }
+
+    .section-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow);
+      margin-bottom: 16px;
     }
-    .panel {
-      max-width: 820px;
-      margin: 0 auto;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 20px;
-      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
-      display: grid;
-      gap: 14px;
+    .section-header {
+      font-size: 18px; font-weight: 700; margin-bottom: 16px;
+      padding-bottom: 10px; border-bottom: 2px solid var(--border);
+      display: flex; align-items: center; gap: 8px;
     }
-    label {
-      font-size: 13px;
-      color: var(--muted);
-      display: block;
-      margin-bottom: 6px;
+    .section-header small { font-weight: 400; font-size: 13px; color: var(--text-secondary); }
+
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 500; color: var(--text-secondary); margin-bottom: 6px; }
+    .form-group input, .form-group select {
+      width: 100%; padding: 10px 12px; border: 1px solid var(--border);
+      border-radius: var(--radius-sm); font-size: 14px; transition: border-color 0.15s;
+      background: var(--surface); font-family: inherit;
     }
-    input[type="text"],
-    input[type="password"],
-    input[type="number"] {
-      width: 100%;
-      padding: 10px 12px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      font-size: 14px;
+    .form-group input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(47,111,88,0.12); }
+    .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+
+    .toggle-wrap { display: flex; align-items: center; gap: 10px; }
+    .toggle {
+      position: relative; width: 44px; height: 24px;
+      background: #ccc; border-radius: 12px; cursor: pointer; transition: background 0.2s;
     }
-    .row {
-      display: grid;
-      gap: 12px;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    .toggle.active { background: var(--primary); }
+    .toggle::after {
+      content: ''; position: absolute; top: 2px; left: 2px;
+      width: 20px; height: 20px; border-radius: 50%; background: #fff;
+      transition: transform 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
     }
-    .actions {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
+    .toggle.active::after { transform: translateX(20px); }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 10px 18px; border: none; border-radius: var(--radius-sm);
+      font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s;
+      font-family: inherit;
     }
-    button {
-      border: none;
-      padding: 10px 14px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 14px;
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-secondary { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: #e8e0d4; }
+    .btn-accent { background: var(--accent); color: #fff; }
+    .btn-accent:hover { background: #8c5220; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+
+    .status-msg {
+      padding: 10px 14px; border-radius: var(--radius-sm);
+      font-size: 13px; margin-top: 10px;
     }
-    .primary {
-      background: var(--accent);
-      color: #fff;
+    .status-msg.ok { background: var(--success-bg); color: var(--success); }
+    .status-msg.err { background: var(--danger-bg); color: var(--danger); }
+
+    .progress-wrap { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }
+    .progress-bar {
+      width: 100%; height: 8px; background: var(--bg); border-radius: 999px;
+      overflow: hidden; border: 1px solid var(--border);
     }
-    .secondary {
-      background: #efe8dc;
-      color: var(--text);
-      border: 1px solid var(--border);
+    .progress-bar-inner {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      transition: width 0.3s ease;
     }
-    .status {
-      font-size: 13px;
-      color: var(--muted);
-      padding: 8px 10px;
-      border-radius: 10px;
-      background: #f6f1e8;
-      border: 1px solid var(--border);
-    }
-    .status.ok {
-      color: #1b5c46;
-      background: #e7f3ee;
-      border-color: #c9e3d8;
-    }
-    .status.error {
-      color: #8a2a1f;
-      background: #f8e7e3;
-      border-color: #f0cfc8;
-    }
-    .log-section {
-      max-width: 820px;
-      margin: 16px auto 0;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 20px;
-      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
-    }
-    .log-section h3 {
-      margin: 0 0 12px;
-      font-size: 17px;
-      color: var(--accent);
-    }
+    .progress-text { font-size: 12px; color: var(--text-secondary); }
+
     .stat-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 10px;
-      margin-bottom: 14px;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 14px;
     }
     .stat-card {
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 12px;
-      text-align: center;
+      background: var(--bg); border-radius: var(--radius-sm);
+      padding: 14px; text-align: center;
     }
-    .stat-label {
-      font-size: 11px;
-      color: var(--muted);
-      margin-bottom: 4px;
+    .stat-card .val { font-size: 22px; font-weight: 700; color: var(--primary); }
+    .stat-card .lbl { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+
+    /* DB 使用量进度条 */
+    .db-usage-bar {
+      height: 6px; background: #e1d8cc; border-radius: 3px;
+      margin-top: 8px; overflow: hidden;
     }
-    .stat-value {
-      font-size: 20px;
-      font-weight: 600;
-      color: var(--text);
+    .db-usage-bar .inner {
+      height: 100%; border-radius: 3px;
+      background: linear-gradient(90deg, var(--primary), #3b9e78);
+      transition: width 0.5s ease;
     }
+    .db-usage-bar .inner.warn { background: linear-gradient(90deg, var(--accent), #d4883c); }
+    .db-usage-bar .inner.danger { background: linear-gradient(90deg, var(--danger), #e85d50); }
+    .db-usage-text {
+      font-size: 10px; color: var(--text-secondary); margin-top: 3px;
+      display: flex; justify-content: space-between;
+    }
+
+    /* DB 详细面板 */
+    .db-panel {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow);
+      margin-bottom: 16px;
+    }
+    .db-panel .db-meta {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 12px; margin-bottom: 16px;
+    }
+    .db-panel .db-meta-item {
+      text-align: center; padding: 10px; background: var(--bg); border-radius: var(--radius-sm);
+    }
+    .db-panel .db-meta-item .val { font-size: 18px; font-weight: 700; color: var(--primary); }
+    .db-panel .db-meta-item .lbl { font-size: 11px; color: var(--text-secondary); }
+    .db-panel .db-bar-wrap { margin-top: 8px; }
+    .db-panel .db-bar {
+      height: 14px; background: #e1d8cc; border-radius: 7px;
+      overflow: hidden; position: relative;
+    }
+    .db-panel .db-bar .inner {
+      height: 100%; border-radius: 7px; min-width: 0;
+      background: linear-gradient(90deg, var(--primary), #3b9e78);
+      transition: width 0.6s ease; display: flex; align-items: center;
+      justify-content: flex-end; padding-right: 8px;
+      font-size: 10px; color: #fff; font-weight: 600; white-space: nowrap;
+    }
+    .db-panel .db-bar .inner.warn { background: linear-gradient(90deg, var(--accent), #d4883c); }
+    .db-panel .db-bar .inner.danger { background: linear-gradient(90deg, var(--danger), #e85d50); }
+    .db-panel .db-bar-label {
+      display: flex; justify-content: space-between; font-size: 11px;
+      color: var(--text-secondary); margin-top: 4px;
+    }
+
     .log-box {
-      background: #1b1a17;
-      color: #c6c1b5;
-      font-family: "Cascadia Code", "Fira Code", monospace;
-      font-size: 12px;
-      line-height: 1.6;
-      border-radius: 12px;
-      padding: 12px;
-      max-height: 320px;
-      overflow: auto;
-      white-space: pre-wrap;
-      word-break: break-all;
+      background: #1a2332; color: #c6d0e0;
+      font-family: "Cascadia Code", "Fira Code", "Consolas", monospace;
+      font-size: 12px; line-height: 1.7; border-radius: var(--radius-sm);
+      padding: 14px; max-height: 340px; overflow: auto; white-space: pre-wrap; word-break: break-all;
     }
-    .log-refresh {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      margin-bottom: 10px;
+
+    .pass-section { text-align: center; padding: 40px 20px; }
+    .pass-section .icon { font-size: 48px; margin-bottom: 12px; }
+    .pass-section h2 { margin-bottom: 8px; }
+    .pass-section p { color: var(--text-secondary); font-size: 14px; margin-bottom: 16px; }
+
+    .source-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--bg); border-radius: var(--radius-sm); margin-bottom: 8px; }
+    .source-item input { flex: 1; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; background: var(--surface); }
+    .source-item .rm-btn { padding: 4px 8px; border: none; background: transparent; color: var(--danger); cursor: pointer; font-size: 18px; border-radius: 6px; }
+    .source-item .rm-btn:hover { background: var(--danger-bg); }
+
+    .tags-wrap { display: flex; flex-wrap: wrap; gap: 8px; padding: 8px; border: 1px solid var(--border); border-radius: var(--radius-sm); min-height: 44px; }
+    .tag { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: var(--primary-light); color: var(--primary); border-radius: 20px; font-size: 13px; }
+    .tag .tag-rm { cursor: pointer; font-size: 14px; opacity: 0.6; }
+    .tag .tag-rm:hover { opacity: 1; }
+    .tag-input { border: none; outline: none; font-size: 13px; flex: 1; min-width: 80px; padding: 4px 0; background: transparent; font-family: inherit; }
+
+    #token-chart { width: 100%; height: 200px; border-radius: var(--radius-sm); }
+    .chart-legend { display: flex; gap: 16px; margin-top: 8px; font-size: 12px; color: var(--text-secondary); }
+    .chart-legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: middle; }
+    .legend-bar::before { background: var(--primary); }
+    .legend-line::before { background: var(--accent); }
+
+    .hidden { display: none; }
+
+    @media (max-width: 768px) {
+      .page-wrap { flex-direction: column; padding: 16px; }
+      .side-nav { width: 100%; position: static; display: flex; overflow-x: auto; gap: 4px; }
+      .side-nav a { white-space: nowrap; font-size: 13px; padding: 8px 12px; }
     }
-    .auto-refresh {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 13px;
-      color: var(--muted);
-    }
-    .auto-refresh input {
-      width: auto;
-    }
-    .chart-section {
-      max-width: 820px;
-      margin: 16px auto 0;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 20px;
-      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
-    }
-    .chart-section h3 {
-      margin: 0 0 12px;
-      font-size: 17px;
-      color: var(--accent);
-    }
-    #token-chart {
-      width: 100%;
-      height: 200px;
-      border-radius: 10px;
-    }
-    .chart-legend {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 10px;
-      font-size: 12px;
-      color: var(--muted);
-    }
-    .chart-legend span::before {
-      content: "";
-      display: inline-block;
-      width: 10px;
-      height: 10px;
-      border-radius: 2px;
-      margin-right: 4px;
-      vertical-align: middle;
-    }
-    .legend-bar::before { background: var(--accent); }
-    .legend-line::before { background: #b56b2e; }
   </style>
 </head>
 <body>
-  <header>
-    <div>
-      <h1>AI 每周总结配置</h1>
-      <div class="meta">仅建议在本机使用此页面。</div>
+  <header class="app-bar">
+    <div class="app-bar-brand">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+      每周热点
     </div>
-    <div class="nav-actions">
-      <a href="/">返回主页</a>
+    <nav class="app-bar-nav">
+      <a href="/reports/latest.html" id="nav-latest">最新周报</a>
       <a href="/history">历史记录</a>
-    </div>
+      <a href="/config" class="active">设置</a>
+    </nav>
   </header>
 
-  <div class="panel">
-    <div>
-      <label>
-        <input id="enabled" type="checkbox" {% if config.enabled %}checked{% endif %} /> 启用 AI 总结
-      </label>
-    </div>
-    <div>
-      <label>API Base URL</label>
-      <input id="base_url" type="text" value="{{ config.base_url }}" placeholder="https://api.example.com/v1" />
-    </div>
-    <div>
-      <label>API Key</label>
-      <input id="api_key" type="password" placeholder="{% if has_api_key %}已设置，留空保持{% else %}请输入 API Key{% endif %}" />
-    </div>
-    <div>
-      <label>Model</label>
-      <input id="model" type="text" value="{{ config.model }}" placeholder="gpt-4o-mini" />
-    </div>
-    <div class="row">
-      <div>
-        <label>Max Tokens</label>
-        <input id="max_tokens" type="number" value="{{ config.max_tokens }}" min="100" max="4000" />
-      </div>
-      <div>
-        <label>Max Items Per Source</label>
-        <input id="max_items" type="number" value="{{ config.max_items_per_source }}" min="3" max="50" />
-      </div>
-    </div>
-    <div class="actions">
-      <button class="primary" id="save">保存配置</button>
-      <button class="secondary" id="test">测试连接</button>
-      <button class="secondary" id="toggle">启用并保存</button>
-      <button class="primary" id="run-now">立即抓取并查看</button>
-    </div>
-    <div class="status" id="status">等待操作</div>
-  </div>
+  <div class="page-wrap">
+    <!-- Sidebar -->
+    <nav class="side-nav" id="side-nav">
+      <a class="active" data-section="general">⚙️ 通用</a>
+      <a data-section="sources">📡 数据源</a>
+      <a data-section="ai">🤖 AI 配置</a>
+      <a data-section="stats">📊 统计</a>
+      <a data-section="logs">📋 日志</a>
+      <a data-section="admin">🔐 管理员</a>
+    </nav>
 
-  <div class="log-section">
-    <h3>日志与消耗统计</h3>
-    <div class="stat-grid">
-      <div class="stat-card">
-        <div class="stat-label">抓取记录</div>
-        <div class="stat-value" id="stat-fetch">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">AI 调用次数</div>
-        <div class="stat-value" id="stat-ai-calls">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">总 Token 消耗</div>
-        <div class="stat-value" id="stat-tokens">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">最近耗时</div>
-        <div class="stat-value" id="stat-time">0s</div>
-      </div>
-    </div>
-  </div>
+    <main class="main-content">
+      <!-- ========== GENERAL ========== -->
+      <div class="section" id="section-general">
+        <div class="section-card">
+          <div class="section-header">⚙️ 通用设置 <small>系统基本信息与快速操作</small></div>
+          <div class="stat-grid" id="sys-stats">
+            <div class="stat-card"><div class="val" id="stat-reports">-</div><div class="lbl">周报数量</div></div>
+            <div class="stat-card">
+              <div class="val" id="stat-db">-</div>
+              <div class="lbl">数据库 / <span id="stat-db-max">2 GB</span></div>
+              <div class="db-usage-bar"><div class="inner" id="stat-db-bar"></div></div>
+              <div class="db-usage-text"><span id="stat-db-pct">-</span></div>
+            </div>
+            <div class="stat-card"><div class="val" id="stat-covers">-</div><div class="lbl">封面文件</div></div>
+            <div class="stat-card"><div class="val" id="stat-latest">-</div><div class="lbl">最新周报</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:10px;">
+            <button class="btn btn-primary" id="run-now-btn">▶ 立即抓取并生成</button>
+            <a href="/reports/latest.html" class="btn btn-secondary">📄 查看最新周报</a>
+            <span style="font-size:13px;color:var(--text-secondary);" id="run-status"></span>
+          </div>
+          <div id="run-progress" class="progress-wrap hidden" aria-live="polite">
+            <div class="progress-bar"><div class="progress-bar-inner" id="run-progress-bar"></div></div>
+            <div class="progress-text" id="run-progress-text">等待抓取...</div>
+          </div>
+          <div style="margin-top:12px;font-size:13px;color:var(--text-secondary);">
+            定时任务：每周日 8:00 · 服务器时间：<span id="server-time"></span>
+          </div>
+        </div>
 
-  <div class="chart-section">
-    <h3>每日 Token 消耗（近 14 天）</h3>
-    <canvas id="token-chart"></canvas>
-    <div class="chart-legend">
-      <span class="legend-bar">Token 消耗</span>
-      <span class="legend-line">调用次数</span>
-    </div>
-  </div>
+        <div class="section-card">
+          <div class="section-header">📊 周报总览</div>
+          <div class="stat-grid" id="overview-stats">
+            <div class="stat-card"><div class="val" id="ov-weeks">-</div><div class="lbl">累计周数</div></div>
+            <div class="stat-card"><div class="val" id="ov-items">-</div><div class="lbl">累计条目</div></div>
+            <div class="stat-card"><div class="val" id="ov-bilibili">-</div><div class="lbl">B 站</div></div>
+            <div class="stat-card"><div class="val" id="ov-weibo">-</div><div class="lbl">微博</div></div>
+            <div class="stat-card"><div class="val" id="ov-affairs">-</div><div class="lbl">时事</div></div>
+          </div>
+        </div>
+      </div>
 
-  <div class="log-section">
-    <h3>日志与消耗统计</h3>
-      <button class="secondary" id="refresh-logs">刷新日志</button>
-      <label class="auto-refresh">
-        <input type="checkbox" id="auto-refresh" checked /> 自动刷新
-      </label>
-    </div>
-    <div class="log-box" id="log-box">加载中...</div>
+      <!-- ========== DATA SOURCES ========== -->
+      <div class="section hidden" id="section-sources">
+        <div class="section-card">
+          <div class="section-header">📡 数据源配置 <small>抓取数量限制与 RSS 源管理</small></div>
+          <div class="form-row">
+            <div class="form-group"><label>B 站热门条数</label><input id="bilibili_limit" type="number" value="{{ data_config.bilibili_limit }}" min="1" max="100" /></div>
+            <div class="form-group"><label>微博热搜条数</label><input id="weibo_limit" type="number" value="{{ data_config.weibo_limit }}" min="1" max="100" /></div>
+            <div class="form-group"><label>时事热点条数</label><input id="affairs_limit" type="number" value="{{ data_config.affairs_limit }}" min="1" max="100" /></div>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <div class="section-header">RSS 订阅源 <small>从下方预设源快速添加，或手动填写</small></div>
+
+          <!-- Preset source selector -->
+          <div style="margin-bottom:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+            <select id="preset-select" style="flex:1;min-width:200px;padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;background:var(--surface);font-family:inherit;">
+              <option value="">— 选择预设数据源 —</option>
+            </select>
+            <button class="btn btn-secondary" id="preset-add-btn" style="padding:9px 14px;">+ 添加</button>
+            <span style="font-size:12px;color:var(--text-secondary);" id="preset-category"></span>
+          </div>
+
+          <div id="source-list"></div>
+          <button class="btn btn-secondary" id="add-source" style="width:100%;margin-top:8px;">+ 手动添加 RSS 源</button>
+        </div>
+
+        <div class="section-card">
+          <div class="section-header">关键词过滤 <small>仅保留包含任一关键词的时事条目</small></div>
+          <div style="margin-bottom:10px;display:flex;gap:8px;flex-wrap:wrap;" id="preset-keywords">
+            <span style="font-size:12px;color:var(--text-secondary);">预设方案：</span>
+          </div>
+          <div class="tags-wrap" id="keywords-wrap"><input class="tag-input" id="keyword-input" placeholder="输入关键词后回车添加" /></div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-primary" id="save-sources">💾 保存数据源配置</button>
+        </div>
+        <div class="status-msg hidden" id="source-status"></div>
+      </div>
+
+      <!-- ========== AI CONFIG ========== -->
+      <div class="section hidden" id="section-ai">
+        <div class="section-card">
+          <div class="section-header">🤖 AI 每周总结 <small>接入 OpenAI 兼容 API</small></div>
+          <div class="form-group">
+            <div class="toggle-wrap">
+              <div class="toggle" id="ai-toggle"></div>
+              <span id="ai-toggle-label">已禁用</span>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>API Base URL</label><input id="base_url" type="text" value="{{ config.base_url }}" placeholder="https://api.openai.com/v1" /></div>
+            <div class="form-group"><label>API Key</label><input id="api_key" type="password" placeholder="{% if has_api_key %}已设置，留空保持{% else %}请输入 API Key{% endif %}" /></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>模型</label><input id="model" type="text" value="{{ config.model }}" placeholder="gpt-4o-mini" /></div>
+            <div class="form-group"><label>Max Tokens</label><input id="max_tokens" type="number" value="{{ config.max_tokens }}" min="100" max="4000" /></div>
+            <div class="form-group"><label>每源条目</label><input id="max_items" type="number" value="{{ config.max_items_per_source }}" min="3" max="50" /></div>
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-primary" id="save-ai">💾 保存</button>
+            <button class="btn btn-secondary" id="test-ai">🔌 测试连接</button>
+          </div>
+          <div class="status-msg hidden" id="ai-status"></div>
+        </div>
+      </div>
+
+      <!-- ========== STATS ========== -->
+      <div class="section hidden" id="section-stats">
+        <div class="section-card">
+          <div class="section-header">📊 系统资源</div>
+          <div class="stat-grid" id="resource-stats">
+            <div class="stat-card"><div class="val" id="res-logs">-</div><div class="lbl">日志大小</div></div>
+            <div class="stat-card"><div class="val" id="res-reports">-</div><div class="lbl">报告大小</div></div>
+            <div class="stat-card"><div class="val" id="res-covers">-</div><div class="lbl">封面数</div></div>
+            <div class="stat-card"><div class="val" id="res-uptime">-</div><div class="lbl">运行时间</div></div>
+          </div>
+        </div>
+
+        <!-- 数据库使用详情 -->
+        <div class="db-panel">
+          <div class="section-header">🗄️ 数据库使用情况</div>
+          <div class="db-meta">
+            <div class="db-meta-item">
+              <div class="val" id="db-val-size">-</div>
+              <div class="lbl">当前大小</div>
+            </div>
+            <div class="db-meta-item">
+              <div class="val" id="db-val-max">2 GB</div>
+              <div class="lbl">最大容量</div>
+            </div>
+            <div class="db-meta-item">
+              <div class="val" id="db-val-pct">-</div>
+              <div class="lbl">使用率</div>
+            </div>
+            <div class="db-meta-item">
+              <div class="val" id="db-val-free">-</div>
+              <div class="lbl">剩余空间</div>
+            </div>
+          </div>
+          <div class="db-bar-wrap">
+            <div class="db-bar"><div class="inner" id="db-bar-main"></div></div>
+            <div class="db-bar-label">
+              <span>0</span><span id="db-bar-label-max">2 GB</span>
+            </div>
+          </div>
+        </div>
+        <div class="section-card">
+          <div class="section-header">Token 消耗趋势 <small>近 14 天</small></div>
+          <canvas id="token-chart"></canvas>
+          <div class="chart-legend">
+            <span class="legend-bar">Token 消耗</span>
+            <span class="legend-line">调用次数</span>
+          </div>
+        </div>
+        <div class="section-card">
+          <div class="section-header">抓取统计</div>
+          <div class="stat-grid" id="fetch-stats">
+            <div class="stat-card"><div class="val" id="fstat-fetch">0</div><div class="lbl">抓取记录</div></div>
+            <div class="stat-card"><div class="val" id="fstat-ai">0</div><div class="lbl">AI 调用</div></div>
+            <div class="stat-card"><div class="val" id="fstat-tokens">0</div><div class="lbl">Token</div></div>
+            <div class="stat-card"><div class="val" id="fstat-time">0s</div><div class="lbl">最近耗时</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== LOGS ========== -->
+      <div class="section hidden" id="section-logs">
+        <div class="section-card">
+          <div class="section-header">📋 运行日志</div>
+          <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;">
+            <button class="btn btn-secondary" id="refresh-logs" style="padding:6px 14px;">⟳ 刷新</button>
+            <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-secondary);">
+              <input type="checkbox" id="auto-refresh" checked /> 自动刷新（5 秒）
+            </label>
+          </div>
+          <div class="log-box" id="log-box">加载中...</div>
+        </div>
+      </div>
+
+      <!-- ========== ADMIN ========== -->
+      <div class="section hidden" id="section-admin">
+        {% if logged_in %}
+        <div class="section-card">
+          <div class="section-header">🔐 管理员设置</div>
+          <div class="form-group">
+            <label>修改管理密码</label>
+            <input id="new-password" type="password" placeholder="输入新密码（至少 4 位）" />
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-primary" id="set-password-btn">🔑 修改密码</button>
+            <button class="btn btn-secondary" id="logout-btn">🚪 退出登录</button>
+          </div>
+          <div class="status-msg hidden" id="admin-status"></div>
+        </div>
+        <div class="section-card">
+          <div class="section-header">💾 数据管理</div>
+          <p style="font-size:14px;color:var(--text-secondary);margin-bottom:12px;">
+            数据库路径：<code style="background:var(--bg);padding:2px 6px;border-radius:4px;">app/db/weekly.db</code><br />
+            日志路径：<code style="background:var(--bg);padding:2px 6px;border-radius:4px;">app/logs/weekly.log</code><br />
+            报告目录：<code style="background:var(--bg);padding:2px 6px;border-radius:4px;">app/static/reports/</code>
+          </p>
+        </div>
+        {% else %}
+        <div class="section-card pass-section">
+          <div class="icon">🔐</div>
+          <h2>管理员登录</h2>
+          <p>{% if password_set %}请输入管理员密码以访问设置。{% else %}首次使用，请设置一个管理密码。{% endif %}</p>
+          <div style="max-width:360px;margin:0 auto;">
+            <div class="form-group">
+              <label>{% if password_set %}管理密码{% else %}设置密码{% endif %}</label>
+              <input id="admin-password" type="password" placeholder="{% if password_set %}输入密码{% else %}至少 4 位{% endif %}" />
+            </div>
+            <button class="btn btn-primary" id="admin-login-btn" style="width:100%;justify-content:center;">
+              {% if password_set %}🔓 登录{% else %}🔑 设置密码并登录{% endif %}
+            </button>
+            <div class="status-msg hidden" id="admin-status"></div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </main>
   </div>
 
   <script>
-    const statusEl = document.getElementById("status");
-    const enabledInput = document.getElementById("enabled");
-    const toggleBtn = document.getElementById("toggle");
-    const payloadFromForm = () => {
-      const maxTokens = parseInt(document.getElementById("max_tokens").value || "600", 10);
-      const maxItems = parseInt(document.getElementById("max_items").value || "12", 10);
-      return {
-        enabled: document.getElementById("enabled").checked,
-        base_url: document.getElementById("base_url").value.trim(),
-        api_key: document.getElementById("api_key").value.trim(),
-        model: document.getElementById("model").value.trim(),
-        max_tokens: Number.isNaN(maxTokens) ? 600 : maxTokens,
-        max_items_per_source: Number.isNaN(maxItems) ? 12 : maxItems,
-      };
-    };
+    const LOGGED_IN = {{ 'true' if logged_in else 'false' }};
+    const PASSWORD_SET = {{ 'true' if password_set else 'false' }};
+    const AI_ENABLED = {{ 'true' if config.enabled else 'false' }};
 
-    const setStatus = (text, status) => {
-      statusEl.textContent = text;
-      statusEl.classList.remove("ok", "error");
-      if (status) {
-        statusEl.classList.add(status);
+    // === Section Switching ===
+    document.querySelectorAll('[data-section]').forEach(el => {
+      el.addEventListener('click', () => {
+        document.querySelectorAll('[data-section]').forEach(e => e.classList.remove('active'));
+        document.querySelectorAll('.section').forEach(e => e.classList.add('hidden'));
+        el.classList.add('active');
+        document.getElementById('section-' + el.dataset.section).classList.remove('hidden');
+        // Scroll to top of main
+        document.querySelector('.main-content').scrollTop = 0;
+      });
+    });
+
+    // AI toggle
+    const aiToggle = document.getElementById('ai-toggle');
+    const aiToggleLabel = document.getElementById('ai-toggle-label');
+    function setAI(state) { aiToggle.classList.toggle('active', state); aiToggleLabel.textContent = state ? '已启用' : '已禁用'; }
+    setAI(AI_ENABLED);
+    aiToggle.addEventListener('click', () => setAI(!aiToggle.classList.contains('active')));
+
+    // === API helpers ===
+    async function api(url, opts = {}) {
+      const resp = await fetch(url, { headers: { 'Content-Type': 'application/json' }, ...opts });
+      return resp.json();
+    }
+
+    function showStatus(el, msg, type) {
+      el.classList.remove('hidden', 'ok', 'err');
+      el.textContent = msg;
+      if (type) el.classList.add(type);
+    }
+
+    // === System Stats ===
+    function updateDbBars(pct, sizeStr, maxStr, maxBytes) {
+      const clamped = Math.min(100, Math.max(0, pct || 0));
+      const level = clamped > 80 ? 'danger' : clamped > 60 ? 'warn' : '';
+      // 通用 tab 小进度条
+      const smallBar = document.getElementById('stat-db-bar');
+      if (smallBar) {
+        smallBar.style.width = clamped + '%';
+        smallBar.className = 'inner' + (level ? ' ' + level : '');
       }
-    };
+      const pctEl = document.getElementById('stat-db-pct');
+      if (pctEl) pctEl.textContent = clamped.toFixed(1) + '% 已用';
+      const maxEl = document.getElementById('stat-db-max');
+      if (maxEl && maxStr) maxEl.textContent = maxStr;
 
-    const updateToggleLabel = () => {
-      toggleBtn.textContent = enabledInput.checked ? "停用并保存" : "启用并保存";
-    };
+      // 统计 tab 大进度条
+      const bigBar = document.getElementById('db-bar-main');
+      if (bigBar) {
+        bigBar.style.width = clamped + '%';
+        bigBar.className = 'inner' + (level ? ' ' + level : '');
+        bigBar.textContent = clamped > 10 ? clamped.toFixed(1) + '%' : '';
+      }
+      const labelMax = document.getElementById('db-bar-label-max');
+      if (labelMax && maxStr) labelMax.textContent = maxStr;
+      document.getElementById('db-val-size').textContent = sizeStr || '-';
+      document.getElementById('db-val-max').textContent = maxStr || '-';
+      document.getElementById('db-val-pct').textContent = clamped.toFixed(1) + '%';
+      // 剩余空间
+      document.getElementById('db-val-free').textContent = maxBytes
+        ? formatBytes(Math.max(0, maxBytes * (1 - clamped / 100)))
+        : '-';
+    }
 
-    const logBox = document.getElementById("log-box");
-    const refreshBtn = document.getElementById("refresh-logs");
-    const autoRefreshInput = document.getElementById("auto-refresh");
-    let autoRefreshTimer = null;
+    function formatBytes(bytes) {
+      if (!bytes && bytes !== 0) return '-';
+      if (bytes >= 1073741824) return (bytes / 1073741824).toFixed(2) + ' GB';
+      if (bytes >= 1048576) return (bytes / 1048576).toFixed(1) + ' MB';
+      if (bytes >= 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return bytes + ' B';
+    }
 
-    const drawChart = (dailyData) => {
-      const canvas = document.getElementById("token-chart");
-      const ctx = canvas.getContext("2d");
+    async function loadSystemStats() {
+      const sys = await api('/api/stats/system');
+      document.getElementById('stat-reports').textContent = sys.report_count || 0;
+      document.getElementById('stat-db').textContent = sys.db_size_str || '-';
+      document.getElementById('stat-covers').textContent = sys.cover_count || 0;
+      document.getElementById('stat-latest').textContent = sys.latest_report || '无';
+      document.getElementById('server-time').textContent = sys.server_time || '-';
+
+      // DB 使用量进度条
+      updateDbBars(sys.db_usage_percent, sys.db_size_str, sys.db_max_str, sys.db_max_size);
+
+      document.getElementById('res-logs').textContent = sys.log_size_str || '-';
+      document.getElementById('res-reports').textContent = sys.report_size_str || '-';
+      document.getElementById('res-covers').textContent = sys.cover_count || 0;
+      document.getElementById('res-uptime').textContent = sys.uptime || '-';
+    }
+
+    async function loadSummary() {
+      const sum = await api('/api/stats/summary');
+      document.getElementById('ov-weeks').textContent = sum.total_weeks || 0;
+      document.getElementById('ov-items').textContent = sum.total_items || 0;
+      const b = sum.source_breakdown || {};
+      document.getElementById('ov-bilibili').textContent = b.bilibili || 0;
+      document.getElementById('ov-weibo').textContent = b.weibo || 0;
+      document.getElementById('ov-affairs').textContent = b.affairs || 0;
+    }
+
+    // === Run Weekly ===
+    let runProgressTimer = null;
+
+    function formatRunSourceSummary(sources) {
+      if (!sources) return '';
+      const parts = [];
+      Object.entries(sources).forEach(([name, info]) => {
+        if (!info || !info.status) return;
+        if (info.status === 'done') {
+          const count = Number.isFinite(info.items) ? info.items : 0;
+          parts.push(`${name} ${count}`);
+        } else if (info.status === 'error') {
+          parts.push(`${name} 失败`);
+        }
+      });
+      return parts.length ? ' · ' + parts.join(' / ') : '';
+    }
+
+    function runStageLabel(message) {
+      if (message === 'rendering') return '生成周报中';
+      if (message === 'fetching') return '抓取中';
+      return '';
+    }
+
+    function updateRunProgress(data) {
+      const wrap = document.getElementById('run-progress');
+      const bar = document.getElementById('run-progress-bar');
+      const text = document.getElementById('run-progress-text');
+      const btn = document.getElementById('run-now-btn');
+      if (!wrap || !bar || !text || !btn) return;
+
+      if (!data || data.status === 'idle') {
+        wrap.classList.add('hidden');
+        btn.disabled = false; btn.textContent = '▶ 立即抓取并生成';
+        return;
+      }
+
+      wrap.classList.remove('hidden');
+      const percent = Number.isFinite(data.percent) ? data.percent : 0;
+      bar.style.width = `${percent}%`;
+      const detail = formatRunSourceSummary(data.sources);
+
+      if (data.status === 'running') {
+        const stage = runStageLabel(data.message) || '抓取中';
+        text.textContent = `${stage} ${percent}% (${data.completed || 0}/${data.total || 0})${detail}`;
+        btn.disabled = true; btn.textContent = '⏳ 抓取中...';
+      } else if (data.status === 'done') {
+        text.textContent = `抓取完成${detail}`;
+        btn.disabled = false; btn.textContent = '▶ 立即抓取并生成';
+      } else if (data.status === 'error') {
+        text.textContent = `抓取失败${detail}`;
+        btn.disabled = false; btn.textContent = '▶ 立即抓取并生成';
+      }
+    }
+
+    function stopRunProgressPolling(status) {
+      if (runProgressTimer) {
+        clearInterval(runProgressTimer);
+        runProgressTimer = null;
+      }
+      if (status === 'done' || status === 'error') {
+        setTimeout(loadSystemStats, 2000);
+      }
+    }
+
+    async function loadRunProgress() {
+      try {
+        const data = await api('/api/run-weekly/status');
+        updateRunProgress(data);
+        if (data && data.status === 'running') {
+          if (!runProgressTimer) runProgressTimer = setInterval(loadRunProgress, 1000);
+        } else {
+          stopRunProgressPolling(data?.status);
+        }
+      } catch (e) {
+        stopRunProgressPolling();
+      }
+    }
+
+    document.getElementById('run-now-btn')?.addEventListener('click', async () => {
+      const btn = document.getElementById('run-now-btn');
+      const st = document.getElementById('run-status');
+      btn.disabled = true; btn.textContent = '⏳ 抓取中...';
+      st.textContent = '后台任务已启动...';
+      try {
+        await fetch('/api/run-weekly', { method: 'POST' });
+        st.textContent = '✅ 任务已启动';
+        setTimeout(() => st.textContent = '', 5000);
+        loadRunProgress();
+      } catch (e) {
+        st.textContent = '❌ 启动失败';
+        btn.disabled = false; btn.textContent = '▶ 立即抓取并生成';
+      }
+    });
+
+    // === AI Config ===
+    document.getElementById('save-ai')?.addEventListener('click', async () => {
+      const payload = {
+        enabled: aiToggle.classList.contains('active'),
+        base_url: document.getElementById('base_url').value.trim(),
+        api_key: document.getElementById('api_key').value.trim(),
+        model: document.getElementById('model').value.trim(),
+        max_tokens: parseInt(document.getElementById('max_tokens').value) || 600,
+        max_items_per_source: parseInt(document.getElementById('max_items').value) || 12,
+      };
+      const el = document.getElementById('ai-status');
+      try {
+        const data = await api('/api/ai-config', { method: 'POST', body: JSON.stringify(payload) });
+        showStatus(el, data.ok ? '✅ 已保存' : '❌ 保存失败', data.ok ? 'ok' : 'err');
+      } catch(e) { showStatus(el, '❌ 网络错误', 'err'); }
+    });
+
+    document.getElementById('test-ai')?.addEventListener('click', async () => {
+      const payload = {
+        enabled: aiToggle.classList.contains('active'),
+        base_url: document.getElementById('base_url').value.trim(),
+        api_key: document.getElementById('api_key').value.trim(),
+        model: document.getElementById('model').value.trim(),
+        max_tokens: parseInt(document.getElementById('max_tokens').value) || 600,
+        max_items_per_source: parseInt(document.getElementById('max_items').value) || 12,
+      };
+      const el = document.getElementById('ai-status');
+      showStatus(el, '⏳ 测试中...');
+      const data = await api('/api/ai-config/test', { method: 'POST', body: JSON.stringify(payload) });
+      showStatus(el, data.ok ? '✅ 连接成功' : '❌ ' + (data.message || '失败'), data.ok ? 'ok' : 'err');
+    });
+
+    // === Data Sources ===
+    let dataSources = {{ data_config.affairs_sources | tojson }};
+    let dataKeywords = {{ data_config.affairs_keywords | tojson }};
+
+    function renderSources() {
+      const list = document.getElementById('source-list');
+      list.innerHTML = dataSources.map((s, i) =>
+        `<div class="source-item">
+          <input type="text" value="${(s.name||'').replace(/"/g,'&quot;')}" placeholder="名称" data-idx="${i}" data-field="name" />
+          <input type="text" value="${(s.url||'').replace(/"/g,'&quot;')}" placeholder="RSS URL" data-idx="${i}" data-field="url" />
+          <button class="rm-btn" data-idx="${i}">×</button>
+        </div>`
+      ).join('');
+      list.querySelectorAll('.rm-btn').forEach(b => b.addEventListener('click', () => { dataSources.splice(+b.dataset.idx, 1); renderSources(); }));
+      list.querySelectorAll('input[data-field]').forEach(i => i.addEventListener('change', () => { const idx = +i.dataset.idx; dataSources[idx] = dataSources[idx] || {}; dataSources[idx][i.dataset.field] = i.value; }));
+    }
+    document.getElementById('add-source')?.addEventListener('click', () => { dataSources.push({name:'',url:''}); renderSources(); });
+
+    function renderKeywords() {
+      const wrap = document.getElementById('keywords-wrap');
+      wrap.querySelectorAll('.tag').forEach(t => t.remove());
+      const input = document.getElementById('keyword-input');
+      dataKeywords.forEach((kw, i) => {
+        const tag = document.createElement('span'); tag.className = 'tag';
+        tag.innerHTML = `${kw} <span class="tag-rm" data-idx="${i}">×</span>`;
+        wrap.insertBefore(tag, input);
+        tag.querySelector('.tag-rm').addEventListener('click', () => { dataKeywords.splice(i,1); renderKeywords(); });
+      });
+    }
+    document.getElementById('keyword-input')?.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        const v = e.target.value.trim();
+        if (v && !dataKeywords.includes(v)) { dataKeywords.push(v); e.target.value = ''; renderKeywords(); }
+      }
+    });
+
+    // === Preset Sources ===
+    let presetSources = [];
+    let presetKeywordSets = {};
+
+    async function loadPresets() {
+      try {
+        const data = await api('/api/source-presets');
+        presetSources = data.sources || [];
+        presetKeywordSets = data.keyword_sets || {};
+
+        // Populate preset selector
+        const sel = document.getElementById('preset-select');
+        // Group by category
+        const categories = {
+          '官方媒体': ['新华社', '央视网', '环球网'],
+          '综合门户': ['新浪', '腾讯', '网易', '搜狐'],
+          '深度/科技': ['虎嗅', '36氪', '澎湃', '观察者', '知乎', '豆瓣'],
+          '技术/开发': ['阮一峰', 'Hacker', 'V2EX'],
+        };
+        // Flatten: build grouped options
+        let optHtml = '<option value="">— 选择预设数据源 —</option>';
+        let currentCat = '';
+        for (const src of presetSources) {
+          let cat = '其他';
+          for (const [c, keywords] of Object.entries(categories)) {
+            if (keywords.some(k => src.name.includes(k))) { cat = c; break; }
+          }
+          if (cat !== currentCat) {
+            if (currentCat) optHtml += '</optgroup>';
+            optHtml += `<optgroup label="${cat}">`;
+            currentCat = cat;
+          }
+          optHtml += `<option value="${src.url}">${src.name}</option>`;
+        }
+        if (currentCat) optHtml += '</optgroup>';
+        sel.innerHTML = optHtml;
+
+        // Populate keyword preset buttons
+        const kwContainer = document.getElementById('preset-keywords');
+        for (const [name, words] of Object.entries(presetKeywordSets)) {
+          const btn = document.createElement('button');
+          btn.className = 'btn btn-secondary';
+          btn.style.padding = '4px 10px';
+          btn.style.fontSize = '12px';
+          btn.textContent = name;
+          btn.addEventListener('click', () => {
+            words.forEach(w => { if (!dataKeywords.includes(w)) dataKeywords.push(w); });
+            renderKeywords();
+          });
+          kwContainer.appendChild(btn);
+        }
+      } catch(e) {}
+    }
+
+    document.getElementById('preset-add-btn')?.addEventListener('click', () => {
+      const sel = document.getElementById('preset-select');
+      const url = sel.value;
+      if (!url) return;
+      const text = sel.options[sel.selectedIndex].text;
+      // Check if already exists
+      if (dataSources.some(s => s.url === url)) return;
+      dataSources.push({name: text, url: url});
+      renderSources();
+      sel.value = '';
+    });
+
+    document.getElementById('save-sources')?.addEventListener('click', async () => {
+      const payload = {
+        bilibili_limit: +document.getElementById('bilibili_limit').value || 30,
+        weibo_limit: +document.getElementById('weibo_limit').value || 30,
+        affairs_limit: +document.getElementById('affairs_limit').value || 20,
+        affairs_sources: dataSources, affairs_keywords: dataKeywords,
+      };
+      const el = document.getElementById('source-status');
+      const btn = document.getElementById('save-sources');
+      btn.disabled = true;
+      btn.textContent = '⏳ 保存中...';
+      try {
+        const data = await api('/api/data-config', { method: 'POST', body: JSON.stringify(payload) });
+        if (data.ok) {
+          showStatus(el, '✅ 已保存，后台正在使用新数据源抓取生成周报...', 'ok');
+          // 刷新统计
+          setTimeout(() => { loadSystemStats(); loadSummary(); }, 3000);
+        } else {
+          showStatus(el, '❌ 失败', 'err');
+        }
+      } catch(e) {
+        showStatus(el, '❌ 网络错误', 'err');
+      }
+      btn.disabled = false;
+      btn.textContent = '💾 保存数据源配置';
+    });
+
+    renderSources(); renderKeywords(); loadPresets();
+
+    // === Logs ===
+    const logBox = document.getElementById('log-box');
+    const chartCanvas = document.getElementById('token-chart');
+
+    function drawChart(dailyData) {
+      if (!chartCanvas || !dailyData || !dailyData.length) return;
+      const ctx = chartCanvas.getContext('2d');
       const dpr = window.devicePixelRatio || 1;
-      const rect = canvas.getBoundingClientRect();
-      canvas.width = rect.width * dpr;
-      canvas.height = rect.height * dpr;
+      const rect = chartCanvas.getBoundingClientRect();
+      chartCanvas.width = rect.width * dpr; chartCanvas.height = rect.height * dpr;
       ctx.scale(dpr, dpr);
 
-      const w = rect.width;
-      const h = rect.height;
-      const pad = { top: 20, right: 16, bottom: 40, left: 6 };
-      const cw = w - pad.left - pad.right;
-      const ch = h - pad.top - pad.bottom;
+      const w = rect.width, h = rect.height;
+      const pad = { top: 20, right: 16, bottom: 36, left: 6 };
+      const cw = w - pad.left - pad.right, ch = h - pad.top - pad.bottom;
       const count = dailyData.length;
-
-      if (count === 0) { return; }
+      if (!count) return;
 
       const maxTokens = Math.max(1, ...dailyData.map(d => d.tokens));
       const maxCalls = Math.max(1, ...dailyData.map(d => d.calls));
@@ -375,141 +879,81 @@
       const gap = cw / count;
 
       ctx.clearRect(0, 0, w, h);
-
       dailyData.forEach((d, i) => {
         const x = pad.left + gap * i + (gap - barW) / 2;
         const barH = (d.tokens / maxTokens) * ch;
         const y = pad.top + ch - barH;
-
-        // bar
-        ctx.fillStyle = "#2f6f58";
-        ctx.beginPath();
-        ctx.roundRect(x, y, barW, barH, [3, 3, 0, 0]);
-        ctx.fill();
-
-        // call dot
+        ctx.fillStyle = '#2f6f58';
+        ctx.beginPath(); ctx.roundRect(x, y, barW, barH, [3,3,0,0]); ctx.fill();
         const dotY = pad.top + ch - (d.calls / maxCalls) * ch;
-        ctx.fillStyle = "#b56b2e";
-        ctx.beginPath();
-        ctx.arc(x + barW / 2, dotY, 3, 0, Math.PI * 2);
-        ctx.fill();
-
-        // date label
-        ctx.fillStyle = "#6b6154";
-        ctx.font = "10px sans-serif";
-        ctx.textAlign = "center";
-        const label = d.date.slice(5);
-        ctx.fillText(label, x + barW / 2, h - pad.bottom + 14);
+        ctx.fillStyle = '#b56b2e';
+        ctx.beginPath(); ctx.arc(x + barW/2, dotY, 3, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#6b6154'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText(d.date.slice(5), x + barW/2, h - pad.bottom + 14);
       });
+    }
 
-      // y-axis label
-      ctx.fillStyle = "#6b6154";
-      ctx.font = "10px sans-serif";
-      ctx.textAlign = "right";
-      ctx.fillText(maxTokens, pad.left + 50, pad.top + 12);
-    };
-
-    const loadLogs = async () => {
+    async function loadLogs() {
       try {
-        const resp = await fetch("/api/ai-config/logs");
-        const data = await resp.json();
-        if (data.lines) {
-          logBox.textContent = data.lines.join("\n") || "暂无日志";
-        }
+        const data = await api('/api/ai-config/logs');
+        if (data.lines) logBox.textContent = data.lines.join('\n') || '暂无日志';
         const s = data.summary || {};
-        document.getElementById("stat-fetch").textContent = s.total_fetch || 0;
-        document.getElementById("stat-ai-calls").textContent = s.ai_calls || 0;
-        document.getElementById("stat-tokens").textContent = s.last_ai_tokens || 0;
-        document.getElementById("stat-time").textContent = (s.last_ai_time || 0) + "s";
+        document.getElementById('fstat-fetch').textContent = s.total_fetch || 0;
+        document.getElementById('fstat-ai').textContent = s.ai_calls || 0;
+        document.getElementById('fstat-tokens').textContent = s.last_ai_tokens || 0;
+        document.getElementById('fstat-time').textContent = (s.last_ai_time || 0) + 's';
+        if (data.daily_chart) drawChart(data.daily_chart);
+      } catch(e) { logBox.textContent = '日志加载失败'; }
+    }
 
-        if (data.daily_chart) {
-          drawChart(data.daily_chart);
-        }
-      } catch (err) {
-        logBox.textContent = "日志加载失败";
-      }
-    };
-
-    refreshBtn.addEventListener("click", loadLogs);
-
-    const startAutoRefresh = () => {
-      stopAutoRefresh();
-      autoRefreshTimer = setInterval(loadLogs, 5000);
-    };
-    const stopAutoRefresh = () => {
-      if (autoRefreshTimer) clearInterval(autoRefreshTimer);
-      autoRefreshTimer = null;
-    };
-
-    autoRefreshInput.addEventListener("change", () => {
-      if (autoRefreshInput.checked) startAutoRefresh();
-      else stopAutoRefresh();
-    });
-
+    document.getElementById('refresh-logs')?.addEventListener('click', loadLogs);
+    let autoTimer = null;
+    function startAuto() { stopAuto(); autoTimer = setInterval(loadLogs, 5000); }
+    function stopAuto() { if (autoTimer) clearInterval(autoTimer); autoTimer = null; }
+    document.getElementById('auto-refresh')?.addEventListener('change', function() { this.checked ? startAuto() : stopAuto(); });
     loadLogs();
-    startAutoRefresh();
+    if (document.getElementById('auto-refresh')?.checked) startAuto();
 
-    const postJson = async (url, payload) => {
-      const resp = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: payload ? JSON.stringify(payload) : null,
-      });
-      const data = await resp.json();
-      return data;
-    };
-
-    const saveConfig = async () => {
-      setStatus("正在保存...");
-      try {
-        const data = await postJson("/api/ai-config", payloadFromForm());
-        setStatus(data.ok ? "保存成功" : "保存失败", data.ok ? "ok" : "error");
-        return data.ok;
-      } catch (err) {
-        setStatus("保存失败", "error");
-        return false;
-      }
-    };
-
-    document.getElementById("save").addEventListener("click", saveConfig);
-
-    document.getElementById("test").addEventListener("click", async () => {
-      setStatus("测试中...");
-      try {
-        const data = await postJson("/api/ai-config/test", payloadFromForm());
-        setStatus(
-          data.ok ? `测试成功: ${data.message}` : `测试失败: ${data.message}`,
-          data.ok ? "ok" : "error"
-        );
-      } catch (err) {
-        setStatus("测试失败", "error");
+    // === Admin ===
+    document.getElementById('admin-login-btn')?.addEventListener('click', async () => {
+      const pw = document.getElementById('admin-password').value;
+      const el = document.getElementById('admin-status');
+      if (PASSWORD_SET) {
+        try {
+          const data = await api('/api/auth/login', { method: 'POST', body: JSON.stringify({password: pw}) });
+          if (data.ok) { showStatus(el, '✅ 登录成功，刷新页面中...', 'ok'); setTimeout(() => location.reload(), 800); }
+          else { showStatus(el, '❌ 密码错误', 'err'); }
+        } catch(e) { showStatus(el, '❌ 登录失败', 'err'); }
+      } else {
+        if (pw.length < 4) { showStatus(el, '密码至少 4 位', 'err'); return; }
+        try {
+          const data = await api('/api/auth/set-password', { method: 'POST', body: JSON.stringify({password: pw}) });
+          if (data.ok) { showStatus(el, '✅ 密码已设置，刷新中...', 'ok'); setTimeout(() => location.reload(), 800); }
+          else { showStatus(el, '❌ ' + (data.detail || '设置失败'), 'err'); }
+        } catch(e) { showStatus(el, '❌ 设置失败', 'err'); }
       }
     });
 
-    toggleBtn.addEventListener("click", async () => {
-      enabledInput.checked = !enabledInput.checked;
-      updateToggleLabel();
-      await saveConfig();
-    });
-
-    document.getElementById("run-now").addEventListener("click", async () => {
-      setStatus("正在抓取并生成周报，请稍候...");
+    document.getElementById('set-password-btn')?.addEventListener('click', async () => {
+      const pw = document.getElementById('new-password').value;
+      const el = document.getElementById('admin-status');
+      if (pw.length < 4) { showStatus(el, '密码至少 4 位', 'err'); return; }
       try {
-        const data = await postJson("/api/run-weekly", null);
-        if (data.ok) {
-          setStatus("抓完成功！正在跳转...", "ok");
-          // 等几秒让后台生成完成，然后跳转
-          setTimeout(() => { window.location.href = "/reports/latest.html"; }, 3000);
-        } else {
-          setStatus("启动失败", "error");
-        }
-      } catch (err) {
-        setStatus("请求失败: " + err, "error");
-      }
+        const data = await api('/api/auth/set-password', { method: 'POST', body: JSON.stringify({password: pw}) });
+        showStatus(el, data.ok ? '✅ 密码已修改' : '❌ 修改失败', data.ok ? 'ok' : 'err');
+      } catch(e) { showStatus(el, '❌ 修改失败', 'err'); }
     });
 
-    enabledInput.addEventListener("change", updateToggleLabel);
-    updateToggleLabel();
+    document.getElementById('logout-btn')?.addEventListener('click', async () => {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      location.reload();
+    });
+
+    // Init
+    loadSystemStats();
+    loadSummary();
+    loadRunProgress();
+    setInterval(loadSystemStats, 60000);
   </script>
 </body>
 </html>

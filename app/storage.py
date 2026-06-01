@@ -1,12 +1,26 @@
 import sqlite3
 from typing import Iterable, List, Dict
 
-from .config import DB_PATH
+from .config import DB_PATH, DB_MAX_SIZE
+
+
+_DB_TIMEOUT = 5.0  # seconds
+
+
+def _get_conn() -> sqlite3.Connection:
+    conn = sqlite3.connect(DB_PATH, timeout=_DB_TIMEOUT)
+    conn.execute("PRAGMA journal_mode=WAL;")
+    conn.execute("PRAGMA cache_size = -20000;")
+    # 设置数据库最大大小 2GB（每次连接都生效）
+    page_size = conn.execute("PRAGMA page_size;").fetchone()[0]
+    max_pages = DB_MAX_SIZE // page_size
+    conn.execute(f"PRAGMA max_page_count = {max_pages};")
+    conn.row_factory = sqlite3.Row
+    return conn
 
 
 def init_db() -> None:
-    conn = sqlite3.connect(DB_PATH)
-    conn.execute("PRAGMA journal_mode=WAL;")
+    conn = _get_conn()
     conn.execute(
         """
         CREATE TABLE IF NOT EXISTS items (
@@ -33,7 +47,7 @@ def init_db() -> None:
 
 
 def upsert_items(week_start: str, items: Iterable[Dict]) -> int:
-    conn = sqlite3.connect(DB_PATH)
+    conn = _get_conn()
     count = 0
     for item in items:
         before = conn.total_changes
@@ -72,8 +86,7 @@ def upsert_items(week_start: str, items: Iterable[Dict]) -> int:
 
 
 def get_items_for_week(week_start: str) -> List[Dict]:
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
+    conn = _get_conn()
     rows = conn.execute(
         """
         SELECT source, title, url, author, metric, cover_url, published_at, rank
@@ -88,8 +101,7 @@ def get_items_for_week(week_start: str) -> List[Dict]:
 
 
 def get_week_summaries() -> List[Dict]:
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
+    conn = _get_conn()
     rows = conn.execute(
         """
         SELECT week_start, COUNT(*) AS total
@@ -100,3 +112,30 @@ def get_week_summaries() -> List[Dict]:
     ).fetchall()
     conn.close()
     return [dict(row) for row in rows]
+
+
+def delete_week_items(week_start: str, source: str = "") -> int:
+    """删除指定周次的条目。若指定 source 则只删该源。"""
+    conn = _get_conn()
+    if source:
+        conn.execute("DELETE FROM items WHERE week_start = ? AND source = ?", (week_start, source))
+    else:
+        conn.execute("DELETE FROM items WHERE week_start = ?", (week_start,))
+    affected = conn.total_changes
+    conn.commit()
+    conn.close()
+    return affected
+
+
+def delete_stale_sources(week_start: str, active_sources: List[str]) -> int:
+    """删除当前周中所有不在 active_sources 列表里的源的条目。"""
+    if not active_sources:
+        return 0
+    conn = _get_conn()
+    placeholders = ",".join("?" for _ in active_sources)
+    sql = f"DELETE FROM items WHERE week_start = ? AND source NOT IN ({placeholders})"
+    conn.execute(sql, [week_start] + list(active_sources))
+    affected = conn.total_changes
+    conn.commit()
+    conn.close()
+    return affected

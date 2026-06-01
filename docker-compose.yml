@@ -8,5 +8,6 @@ services:
       - ./app/db:/app/app/db
       - ./app/logs:/app/app/logs
       - ./app/static/reports:/app/app/static/reports
+      - ./app/data_sources.json:/app/app/data_sources.json
       - ./ai_config.json:/app/ai_config.json
     restart: unless-stopped

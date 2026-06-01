@@ -29,10 +29,9 @@ STATIC_DIR = BASE_DIR / "static"
 SOURCE_LABELS = {
     "bilibili": "Bilibili 热门",
     "weibo": "微博热搜",
-    "affairs": "时事热点",
 }
 
-SOURCE_ORDER = ["bilibili", "weibo", "affairs"]
+SOURCE_ORDER = ["bilibili", "weibo"]
 
 TIMEZONE = "Asia/Shanghai"
 CRON_WEEKDAY = "sun"
@@ -42,6 +41,9 @@ CRON_MINUTE = 0
 BILIBILI_LIMIT = 30
 WEIBO_LIMIT = 30
 CURRENT_AFFAIRS_LIMIT = 20
+
+# 数据库最大大小 2GB（配合 PRAGMA max_page_count 使用）
+DB_MAX_SIZE = 2 * 1024 * 1024 * 1024  # 2 GB in bytes
 
 CURRENT_AFFAIRS_SOURCES = [
     {"name": "人民日报-时政", "url": "http://www.people.com.cn/rss/politics.xml"},

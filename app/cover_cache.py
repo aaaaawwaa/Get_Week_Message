@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import hashlib
 import logging
 import time
@@ -94,6 +92,6 @@ def cache_covers(items: Iterable[Dict]) -> None:
                 logger.warning("cover download failed: %s", normalized)
                 continue
 
-        item["cover_url"] = f"covers/{file_name}"
+        item["cover_url"] = f"/reports/covers/{file_name}"
 
     _cleanup_cover_cache(logger)

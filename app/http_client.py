@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import logging
 import random
 import threading
@@ -35,6 +33,15 @@ def _rate_limit(url: str, min_interval: float, jitter: float) -> None:
         time.sleep(wait + random.uniform(0, max(0.0, jitter)))
 
 
+def _is_client_error(exc: Exception) -> bool:
+    """4xx 错误不应重试"""
+    if isinstance(exc, requests.HTTPError):
+        resp = getattr(exc, "response", None)
+        if resp is not None and 400 <= resp.status_code < 500:
+            return True
+    return False
+
+
 def request_json(
     url: str,
     params: Optional[Dict[str, Any]] = None,
@@ -66,6 +73,8 @@ def request_json(
                 retries,
                 exc,
             )
+            if _is_client_error(exc):
+                raise
             if attempt < retries - 1:
                 time.sleep(backoff * (2**attempt))
 
@@ -108,6 +117,10 @@ def download_file(
                 retries,
                 exc,
             )
+            if _is_client_error(exc):
+                if tmp_path.exists():
+                    tmp_path.unlink()
+                raise
             if tmp_path.exists():
                 tmp_path.unlink()
             if attempt < retries - 1:
@@ -149,6 +162,8 @@ def request_bytes(
                 retries,
                 exc,
             )
+            if _is_client_error(exc):
+                raise
             if attempt < retries - 1:
                 time.sleep(backoff * (2**attempt))
 

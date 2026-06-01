@@ -53,12 +53,22 @@ def render_weekly(
         {"label": group["label"], "count": len(group["entries"])}
         for group in groups
     ]
+
+    # Build featured items: top 3 from each source, max 9 total
+    featured_items: List[Dict] = []
+    for group in groups:
+        for item in group["entries"][:3]:
+            featured_items.append(item)
+        if len(featured_items) >= 9:
+            break
+
     html = template.render(
         week_start=week_start,
         generated_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         groups=groups,
         summary=summary,
         total_count=len(items),
+        featured_items=featured_items,
         ai_summary=ai_summary,
         ai_summary_status=ai_status,
     )
@@ -75,7 +85,7 @@ def render_index(week_summaries: List[Dict]) -> str:
         {
             "week_start": row["week_start"],
             "total": row["total"],
-            "link": f"{row['week_start']}.html",
+            "link": f"/reports/{row['week_start']}.html",
         }
         for row in week_summaries
     ]
