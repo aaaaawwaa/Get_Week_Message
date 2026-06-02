@@ -173,6 +173,7 @@
     }
     .timeline-accent.weibo { background: linear-gradient(180deg, #ff6b35, #f7c948); }
     .timeline-accent.affairs { background: linear-gradient(180deg, #2c6e9c, #5ba3d9); }
+    .timeline-accent.github { background: linear-gradient(180deg, #6e40c9, #a371f7); }
 
     .timeline-body {
       flex: 1; padding: 14px 14px 14px 0; display: flex; align-items: flex-start; gap: 14px; min-width: 0;
@@ -212,6 +213,7 @@
     }
     .timeline-source-icon.weibo { background: #fff5f0; }
     .timeline-source-icon.affairs { background: #f0f6fa; }
+    .timeline-source-icon.github { background: #f0f0ff; }
 
     /* === Featured carousel (混合) === */
     .featured-section { margin-bottom: 24px; }
@@ -345,7 +347,7 @@
         <nav class="source-nav">
           {% for group in groups %}
           <a href="#source-{{ group.source }}">
-            {% if group.source == "bilibili" %}📺{% elif group.source == "weibo" %}🔥{% else %}📰{% endif %}
+            {% if group.source == "bilibili" %}📺{% elif group.source == "weibo" %}🔥{% elif group.source == "github" %}🐙{% else %}📰{% endif %}
             {{ group.label }}<span class="count">{{ group.entries | length }}</span>
           </a>
           {% endfor %}
@@ -500,9 +502,48 @@
       {% endif %}
       {% endfor %}
 
-      <!-- RSS 源: 时间线卡片（所有非 bilibili/weibo 的动态源） -->
+      <!-- GitHub: 本周热门仓库 -->
       {% for group in groups %}
-      {% if group.source != "bilibili" and group.source != "weibo" %}
+      {% if group.source == "github" %}
+      <div class="category-section" id="source-github">
+        <div class="section-header">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <h2>🐙 {{ group.label }}</h2>
+            <span class="badge">{{ group.entries | length }} 个项目</span>
+          </div>
+        </div>
+        <div class="timeline">
+          {% for item in group.entries %}
+          {% set rclass = "rn-affairs" %}
+          {% if item.rank is not none and item.rank <= 3 %}
+            {% if item.rank == 1 %}{% set rclass = "r1" %}
+            {% elif item.rank == 2 %}{% set rclass = "r2" %}
+            {% elif item.rank == 3 %}{% set rclass = "r3" %}
+            {% endif %}
+          {% endif %}
+          <div class="timeline-card">
+            <div class="timeline-accent github"></div>
+            <div class="timeline-body">
+              <div class="timeline-rank {{ rclass }}">{{ item.rank }}</div>
+              <div class="timeline-content">
+                <div class="timeline-title"><a href="{{ item.url }}" target="_blank" rel="noopener">{{ item.title }}</a></div>
+                <div class="timeline-meta">
+                  {% if item.author %}<span class="tag">👤 {{ item.author }}</span>{% endif %}
+                  {% if item.metric %}<span class="tag">{{ item.metric }}</span>{% endif %}
+                </div>
+              </div>
+              <div class="timeline-source-icon github">🐙</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+      {% endfor %}
+
+      <!-- RSS 源: 时间线卡片（所有非 bilibili/weibo/github 的动态源） -->
+      {% for group in groups %}
+      {% if group.source != "bilibili" and group.source != "weibo" and group.source != "github" %}
       <div class="category-section" id="source-{{ group.source }}">
         <div class="section-header">
           <div style="display:flex;align-items:center;gap:10px;">

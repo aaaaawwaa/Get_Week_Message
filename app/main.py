@@ -220,7 +220,7 @@ async def save_data_source_config(request: Request):
     if not isinstance(payload, dict):
         raise HTTPException(status_code=400, detail="invalid payload")
     existing = read_data_config()
-    for key in ["bilibili_limit", "weibo_limit", "affairs_limit", "affairs_sources", "affairs_keywords"]:
+    for key in ["bilibili_limit", "weibo_limit", "github_limit", "affairs_limit", "affairs_sources", "affairs_keywords"]:
         if key in payload and payload[key] is not None:
             existing[key] = payload[key]
     save_data_config(existing)

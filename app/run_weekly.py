@@ -11,6 +11,7 @@ from .ai_summary import generate_weekly_summary
 from .cover_cache import cache_covers
 from .fetchers.affairs import fetch_current_affairs
 from .fetchers.bilibili import fetch_bilibili
+from .fetchers.github import fetch_github_trending
 from .fetchers.weibo import fetch_weibo
 from .logging_utils import configure_logging
 from .render import render_index, render_weekly
@@ -22,6 +23,7 @@ def _build_fetch_jobs():
     jobs = [
         ("bilibili", lambda: fetch_bilibili(_cfg.BILIBILI_LIMIT)),
         ("weibo", lambda: fetch_weibo(_cfg.WEIBO_LIMIT)),
+        ("github", lambda: fetch_github_trending(_cfg.GITHUB_LIMIT)),
     ]
     if _cfg.CURRENT_AFFAIRS_SOURCES:
         jobs.append(("affairs", lambda: fetch_current_affairs(_cfg.CURRENT_AFFAIRS_LIMIT)))
@@ -204,7 +206,7 @@ def main() -> None:
             _set_run_message("rendering")
             cache_covers(items)
             # 清理已被移除的数据源条目
-            active_sources = {"bilibili", "weibo"}
+            active_sources = {"bilibili", "weibo", "github"}
             for it in items:
                 src = it.get("source", "")
                 if src:

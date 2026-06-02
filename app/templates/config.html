@@ -304,6 +304,7 @@
             <div class="stat-card"><div class="val" id="ov-bilibili">-</div><div class="lbl">B 站</div></div>
             <div class="stat-card"><div class="val" id="ov-weibo">-</div><div class="lbl">微博</div></div>
             <div class="stat-card"><div class="val" id="ov-affairs">-</div><div class="lbl">时事</div></div>
+            <div class="stat-card"><div class="val" id="ov-github">-</div><div class="lbl">GitHub</div></div>
           </div>
         </div>
       </div>
@@ -316,6 +317,7 @@
             <div class="form-group"><label>B 站热门条数</label><input id="bilibili_limit" type="number" value="{{ data_config.bilibili_limit }}" min="1" max="100" /></div>
             <div class="form-group"><label>微博热搜条数</label><input id="weibo_limit" type="number" value="{{ data_config.weibo_limit }}" min="1" max="100" /></div>
             <div class="form-group"><label>时事热点条数</label><input id="affairs_limit" type="number" value="{{ data_config.affairs_limit }}" min="1" max="100" /></div>
+            <div class="form-group"><label>GitHub 热门项目</label><input id="github_limit" type="number" value="{{ data_config.github_limit }}" min="1" max="30" /></div>
           </div>
         </div>
 
@@ -607,6 +609,7 @@
       document.getElementById('ov-bilibili').textContent = b.bilibili || 0;
       document.getElementById('ov-weibo').textContent = b.weibo || 0;
       document.getElementById('ov-affairs').textContent = b.affairs || 0;
+      document.getElementById('ov-github').textContent = b.github || 0;
     }
 
     // === Run Weekly ===
@@ -849,6 +852,7 @@
         bilibili_limit: +document.getElementById('bilibili_limit').value || 30,
         weibo_limit: +document.getElementById('weibo_limit').value || 30,
         affairs_limit: +document.getElementById('affairs_limit').value || 20,
+        github_limit: +document.getElementById('github_limit').value || 10,
         affairs_sources: dataSources, affairs_keywords: dataKeywords,
       };
       const el = document.getElementById('source-status');

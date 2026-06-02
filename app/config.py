@@ -29,9 +29,10 @@ STATIC_DIR = BASE_DIR / "static"
 SOURCE_LABELS = {
     "bilibili": "Bilibili 热门",
     "weibo": "微博热搜",
+    "github": "GitHub 热门",
 }
 
-SOURCE_ORDER = ["bilibili", "weibo"]
+SOURCE_ORDER = ["bilibili", "weibo", "github"]
 
 TIMEZONE = "Asia/Shanghai"
 CRON_WEEKDAY = "sun"
@@ -41,6 +42,7 @@ CRON_MINUTE = 0
 BILIBILI_LIMIT = 30
 WEIBO_LIMIT = 30
 CURRENT_AFFAIRS_LIMIT = 20
+GITHUB_LIMIT = 10
 
 # 数据库最大大小 2GB（配合 PRAGMA max_page_count 使用）
 DB_MAX_SIZE = 2 * 1024 * 1024 * 1024  # 2 GB in bytes

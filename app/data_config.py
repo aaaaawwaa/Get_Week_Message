@@ -11,6 +11,7 @@ from .config import (
     CURRENT_AFFAIRS_KEYWORDS,
     CURRENT_AFFAIRS_LIMIT,
     CURRENT_AFFAIRS_SOURCES,
+    GITHUB_LIMIT,
     WEIBO_LIMIT,
 )
 
@@ -55,6 +56,7 @@ PRESET_KEYWORDS: Dict[str, List[str]] = {
 DEFAULT_DATA_CONFIG: Dict[str, Any] = {
     "bilibili_limit": BILIBILI_LIMIT,
     "weibo_limit": WEIBO_LIMIT,
+    "github_limit": GITHUB_LIMIT,
     "affairs_limit": CURRENT_AFFAIRS_LIMIT,
     "affairs_sources": list(CURRENT_AFFAIRS_SOURCES),
     "affairs_keywords": list(CURRENT_AFFAIRS_KEYWORDS),
@@ -89,6 +91,7 @@ def apply_data_config_to_module() -> None:
     data = read_data_config()
     cmod.BILIBILI_LIMIT = data.get("bilibili_limit", cmod.BILIBILI_LIMIT)
     cmod.WEIBO_LIMIT = data.get("weibo_limit", cmod.WEIBO_LIMIT)
+    cmod.GITHUB_LIMIT = data.get("github_limit", cmod.GITHUB_LIMIT)
     cmod.CURRENT_AFFAIRS_LIMIT = data.get("affairs_limit", cmod.CURRENT_AFFAIRS_LIMIT)
     cmod.CURRENT_AFFAIRS_SOURCES = data.get("affairs_sources", cmod.CURRENT_AFFAIRS_SOURCES)
     cmod.CURRENT_AFFAIRS_KEYWORDS = data.get("affairs_keywords", cmod.CURRENT_AFFAIRS_KEYWORDS)
