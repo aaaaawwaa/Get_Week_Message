@@ -7,7 +7,7 @@ import time
 from . import config as _cfg
 from .config import ensure_dirs
 from .data_config import apply_data_config_to_module
-from .ai_summary import generate_weekly_summary
+from .ai_summary import generate_weekly_summary, translate_github_descriptions
 from .cover_cache import cache_covers
 from .fetchers.affairs import fetch_current_affairs
 from .fetchers.bilibili import fetch_bilibili
@@ -202,6 +202,12 @@ def main() -> None:
                         _update_run_source(name, "error", 0, error=str(exc), elapsed=elapsed)
                     finally:
                         _advance_run_progress()
+
+            # GitHub 项目描述翻译（AI 可选）
+            _set_run_message("translating")
+            translated = translate_github_descriptions(items)
+            if translated:
+                logger.info("translated %s github descriptions", translated)
 
             _set_run_message("rendering")
             cache_covers(items)

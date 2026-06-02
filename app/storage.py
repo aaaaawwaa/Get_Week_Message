@@ -89,7 +89,7 @@ def get_items_for_week(week_start: str) -> List[Dict]:
     conn = _get_conn()
     rows = conn.execute(
         """
-        SELECT source, title, url, author, metric, cover_url, published_at, rank
+        SELECT source, title, url, author, metric, cover_url, published_at, rank, raw_json
         FROM items
         WHERE week_start = ?
         ORDER BY source ASC, rank ASC

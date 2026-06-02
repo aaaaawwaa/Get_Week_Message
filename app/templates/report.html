@@ -527,6 +527,13 @@
               <div class="timeline-rank {{ rclass }}">{{ item.rank }}</div>
               <div class="timeline-content">
                 <div class="timeline-title"><a href="{{ item.url }}" target="_blank" rel="noopener">{{ item.title }}</a></div>
+                {% set gh_extra = item.raw_json | github_desc if item.raw_json else {} %}
+                {% if gh_extra.description or gh_extra.description_cn %}
+                <div class="timeline-desc" style="font-size:12px;color:var(--text-secondary);margin-top:4px;line-height:1.5;">
+                  {% if gh_extra.description_cn %}<span title="中文翻译">{{ gh_extra.description_cn }}</span>{% endif %}
+                  {% if gh_extra.description %}<br/><span style="font-size:11px;opacity:0.65;" title="原文">{{ gh_extra.description }}</span>{% endif %}
+                </div>
+                {% endif %}
                 <div class="timeline-meta">
                   {% if item.author %}<span class="tag">👤 {{ item.author }}</span>{% endif %}
                   {% if item.metric %}<span class="tag">{{ item.metric }}</span>{% endif %}

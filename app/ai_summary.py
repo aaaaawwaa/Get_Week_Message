@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import re
 import time
 from typing import Dict, List, Tuple
 
@@ -206,3 +207,81 @@ def test_ai_connection(settings: Dict) -> Tuple[bool, str]:
         return True, result[:200]
     except Exception as exc:
         return False, str(exc)
+
+
+def translate_github_descriptions(items: List[Dict]) -> int:
+    """批量翻译 GitHub 项目的英文描述为中文。
+    仅在 AI 启用且配置完整时生效。返回翻译条数。"""
+    settings = _load_ai_settings()
+    if not settings.get("enabled"):
+        return 0
+    if not settings.get("base_url") or not settings.get("api_key"):
+        return 0
+
+    github_items = [it for it in items if it.get("source") == "github"]
+    if not github_items:
+        return 0
+
+    # 提取需要翻译的描述
+    descriptions = []
+    for it in github_items:
+        raw = it.get("raw_json", "")
+        desc = ""
+        if raw:
+            try:
+                desc = json.loads(raw).get("description", "")
+            except (json.JSONDecodeError, TypeError):
+                pass
+        descriptions.append(desc)
+
+    # 构造批量翻译 prompt
+    lines = ["Translate each GitHub repository description below into concise Chinese (one line per item, keep it under 60 chars). Preserve the item number prefix."]
+    for i, desc in enumerate(descriptions, start=1):
+        text = desc.strip() if desc else "(no description)"
+        lines.append(f"{i}. {text}")
+    lines.append("---")
+    lines.append("Respond with only the translated lines, one per item number (e.g. '1. 中文翻译'). No extra commentary.")
+
+    prompt = "\n".join(lines)
+    logger = logging.getLogger("weekly")
+    try:
+        translated_text, _ = _post_chat_completion(settings, prompt)
+        if not translated_text:
+            logger.warning("github translate: empty response from AI")
+            return 0
+
+        # 解析 AI 返回的逐行翻译
+        translated = {}
+        for line in translated_text.strip().split("\n"):
+            line = line.strip()
+            if not line:
+                continue
+            m = re.match(r"^(\d+)[\.\)、]\s*(.+)", line)
+            if m:
+                idx = int(m.group(1)) - 1
+                if 0 <= idx < len(github_items):
+                    translated[idx] = m.group(2).strip()
+            elif len(translated) < len(github_items):
+                translated[len(translated)] = line.strip()
+
+        count = 0
+        for idx, project in enumerate(github_items):
+            cn = translated.get(idx, "").strip()
+            if not cn:
+                continue
+            raw = project.get("raw_json", "")
+            data = {}
+            if raw:
+                try:
+                    data = json.loads(raw)
+                except (json.JSONDecodeError, TypeError):
+                    pass
+            data["description_cn"] = cn
+            project["raw_json"] = json.dumps(data, ensure_ascii=False)
+            count += 1
+
+        logger.info("github translate: translated %s/%s descriptions", count, len(github_items))
+        return count
+    except Exception as exc:
+        logger.warning("github translate failed: %s", exc)
+        return 0

@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import json
 from typing import Dict, List
 
 from ..config import (
@@ -54,7 +55,7 @@ def fetch_github_trending(limit: int = 10, timeout: int = 15) -> List[Dict]:
             "cover_url": repo.get("owner", {}).get("avatar_url", ""),
             "published_at": repo.get("created_at", ""),
             "rank": idx,
-            "raw_json": "",
+            "raw_json": json.dumps({"description": desc}, ensure_ascii=False) if desc else "",
         })
 
     return results

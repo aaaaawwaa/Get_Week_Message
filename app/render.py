@@ -1,14 +1,25 @@
 from datetime import datetime
+import json
 from typing import Dict, List
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from .config import TEMPLATE_DIR, REPORTS_DIR, SOURCE_LABELS, SOURCE_ORDER
 
+
+def _parse_github_desc(raw_json: str) -> dict:
+    """解析 raw_json 中的 GitHub 项目描述信息。"""
+    try:
+        return json.loads(raw_json)
+    except (json.JSONDecodeError, TypeError):
+        return {}
+
+
 _env = Environment(
     loader=FileSystemLoader(str(TEMPLATE_DIR)),
     autoescape=select_autoescape(["html"]),
 )
+_env.filters["github_desc"] = _parse_github_desc
 
 
 def _group_items(items: List[Dict]) -> List[Dict]:
