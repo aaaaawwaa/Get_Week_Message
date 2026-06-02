@@ -126,7 +126,16 @@
       display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory;
       -webkit-overflow-scrolling: touch; padding-bottom: 8px;
       scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+      position: relative;
     }
+    /* Scroll hint: gradient fade on right edge */
+    .bili-scroll::after {
+      content: ''; position: sticky; right: 0; flex-shrink: 0;
+      width: 40px; margin-left: -40px;
+      background: linear-gradient(90deg, transparent, rgba(246,243,238,0.85));
+      pointer-events: none; z-index: 1;
+    }
+    .bili-scroll.scrolled-end::after { display: none; }
     .bili-scroll::-webkit-scrollbar { height: 6px; }
     .bili-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
@@ -295,6 +304,19 @@
       .bili-card-img { height: 100px; }
       .timeline-body { flex-direction: column; gap: 8px; }
       .timeline-rank { width: 32px; height: 32px; font-size: 13px; }
+    }
+
+    /* Print styles */
+    @media print {
+      body { background: #fff; color: #000; }
+      .app-bar, .sidebar, .btn-top, footer { display: none; }
+      .page-wrap { max-width: 100%; padding: 0; display: block; }
+      .main-content { width: 100%; }
+      .hero { background: #f0f0f0; color: #000; box-shadow: none; }
+      .category-section { break-inside: avoid; }
+      .timeline-card { box-shadow: none; border: 1px solid #ccc; }
+      .bili-scroll { display: block; overflow-x: visible; }
+      .bili-card { flex: none; display: inline-block; width: 32%; margin-bottom: 12px; }
     }
 
     @keyframes slideIn {
@@ -622,6 +644,14 @@
     }
     window.addEventListener('scroll', updateActiveNav, { passive: true });
     updateActiveNav();
+
+    // B站横向滚动提示：滚动到右端时隐藏渐变
+    document.querySelectorAll('.bili-scroll').forEach(el => {
+      el.addEventListener('scroll', function() {
+        const end = this.scrollLeft + this.clientWidth >= this.scrollWidth - 8;
+        this.classList.toggle('scrolled-end', end);
+      }, { passive: true });
+    });
 
     // Back to top
     const btnTop = document.createElement('button');

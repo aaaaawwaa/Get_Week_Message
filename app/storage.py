@@ -139,3 +139,21 @@ def delete_stale_sources(week_start: str, active_sources: List[str]) -> int:
     conn.commit()
     conn.close()
     return affected
+
+
+def delete_old_weeks(keep_weeks: int = 12) -> int:
+    """删除超过 keep_weeks 周的旧数据，防止数据库无限增长。"""
+    conn = _get_conn()
+    rows = conn.execute(
+        "SELECT DISTINCT week_start FROM items ORDER BY week_start DESC LIMIT ?",
+        (keep_weeks + 1,),
+    ).fetchall()
+    if len(rows) <= keep_weeks:
+        conn.close()
+        return 0
+    cutoff = rows[-1]["week_start"]
+    conn.execute("DELETE FROM items WHERE week_start < ?", (cutoff,))
+    affected = conn.total_changes
+    conn.commit()
+    conn.close()
+    return affected

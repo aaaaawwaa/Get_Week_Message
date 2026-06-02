@@ -150,7 +150,18 @@
       background: var(--bg); border-radius: var(--radius-sm);
       padding: 14px; text-align: center;
     }
-    .stat-card .val { font-size: 22px; font-weight: 700; color: var(--primary); }
+    .stat-card .val { font-size: 22px; font-weight: 700; color: var(--primary); min-height: 28px; }
+    .stat-card .val.loading {
+      color: transparent;
+      background: linear-gradient(90deg, var(--border) 25%, #e8e2d6 50%, var(--border) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.2s infinite;
+      border-radius: 4px; width: 60%; margin: 0 auto;
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
     .stat-card .lbl { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
 
     /* DB 使用量进度条 */
@@ -272,15 +283,15 @@
         <div class="section-card">
           <div class="section-header">⚙️ 通用设置 <small>系统基本信息与快速操作</small></div>
           <div class="stat-grid" id="sys-stats">
-            <div class="stat-card"><div class="val" id="stat-reports">-</div><div class="lbl">周报数量</div></div>
+            <div class="stat-card"><div class="val loading" id="stat-reports">-</div><div class="lbl">周报数量</div></div>
             <div class="stat-card">
               <div class="val" id="stat-db">-</div>
               <div class="lbl">数据库 / <span id="stat-db-max">2 GB</span></div>
               <div class="db-usage-bar"><div class="inner" id="stat-db-bar"></div></div>
               <div class="db-usage-text"><span id="stat-db-pct">-</span></div>
             </div>
-            <div class="stat-card"><div class="val" id="stat-covers">-</div><div class="lbl">封面文件</div></div>
-            <div class="stat-card"><div class="val" id="stat-latest">-</div><div class="lbl">最新周报</div></div>
+            <div class="stat-card"><div class="val loading" id="stat-covers">-</div><div class="lbl">封面文件</div></div>
+            <div class="stat-card"><div class="val loading" id="stat-latest">-</div><div class="lbl">最新周报</div></div>
           </div>
           <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:10px;">
             <button class="btn btn-primary" id="run-now-btn">▶ 立即抓取并生成</button>
@@ -575,9 +586,13 @@
     async function loadSystemStats() {
       const sys = await api('/api/stats/system');
       document.getElementById('stat-reports').textContent = sys.report_count || 0;
+      document.getElementById('stat-reports').classList.remove('loading');
       document.getElementById('stat-db').textContent = sys.db_size_str || '-';
+      document.getElementById('stat-db').classList.remove('loading');
       document.getElementById('stat-covers').textContent = sys.cover_count || 0;
+      document.getElementById('stat-covers').classList.remove('loading');
       document.getElementById('stat-latest').textContent = sys.latest_report || '无';
+      document.getElementById('stat-latest').classList.remove('loading');
       document.getElementById('server-time').textContent = sys.server_time || '-';
 
       // DB 使用量进度条

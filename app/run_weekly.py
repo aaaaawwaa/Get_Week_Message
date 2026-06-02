@@ -15,7 +15,7 @@ from .fetchers.github import fetch_github_trending
 from .fetchers.weibo import fetch_weibo
 from .logging_utils import configure_logging
 from .render import render_index, render_weekly
-from .storage import get_items_for_week, get_week_summaries, init_db, upsert_items, delete_stale_sources
+from .storage import get_items_for_week, get_week_summaries, init_db, upsert_items, delete_stale_sources, delete_old_weeks
 
 
 def _build_fetch_jobs():
@@ -229,6 +229,12 @@ def main() -> None:
 
             summaries = get_week_summaries()
             render_index(summaries)
+
+            # 清理超过 12 周的旧数据
+            cleaned_old = delete_old_weeks(keep_weeks=12)
+            if cleaned_old:
+                logger.info("cleaned %s old items (kept last 12 weeks)", cleaned_old)
+
             _finish_run_progress("done", "done")
             logger.info("weekly report generated successfully for %s", week_start)
         except Exception:
